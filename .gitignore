@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+*.iml
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/**/build/
+
+# Lambda / Node
+lambda/node_modules/
+lambda/function.zip
+

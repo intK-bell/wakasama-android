@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">LauncherLock</string>
+    <string name="current_state">現在状態: %1$s</string>
+    <string name="locked">LOCKED</string>
+    <string name="unlocked">UNLOCKED</string>
+    <string name="msg_missing_config">API設定が不足しとる</string>
+    <string name="msg_sent_and_unlocked">送信成功。ロック解除した</string>
+    <string name="msg_queued">送信失敗。再送キューへ保存した</string>
+    <string name="open_settings">設定を開く</string>
+    <string name="settings_title">送信設定</string>
+    <string name="hint_mail_to">送信先メールアドレス</string>
+    <string name="hint_question_count">質問数 (1-20)</string>
+    <string name="apply_question_count">質問数を反映</string>
+    <string name="lock_mode_label">ロック対象日 (JST基準)</string>
+    <string name="lock_mode_weekday">平日のみ</string>
+    <string name="lock_mode_holiday">土日祝</string>
+    <string name="lock_mode_every_day">毎日</string>
+    <string name="hint_question_n">質問%1$d</string>
+    <string name="answer_hint_format">回答%1$d</string>
+    <string name="question_label_format">質問%1$d: %2$s</string>
+    <string name="default_question_1">今日やることは？</string>
+    <string name="default_question_2">昨日の反省は？</string>
+    <string name="save_settings">設定を保存</string>
+    <string name="msg_settings_saved">設定を保存した</string>
+    <string name="msg_settings_required">送信先メールアドレス / 設定した質問数ぶんの質問文は必須</string>
+    <string name="msg_invalid_question_count">質問数は1〜20で入力して</string>
+    <string name="msg_question_count_updated">質問入力欄を更新した</string>
+</resources>
