@@ -3,6 +3,8 @@
     <string name="main_title">若様、\n学問のほどをお聞かせくださりませ</string>
     <string name="main_status_placeholder">けっかい：-</string>
     <string name="run_lock_check">けっかいをはる</string>
+    <string name="lock_now">けっかいをはる</string>
+    <string name="unlock_now">けっかいをとく</string>
     <string name="submit_and_unlock">かくかくしかじかじゃ</string>
     <string name="current_state">けっかい：%1$s</string>
     <string name="locked">はられておる</string>

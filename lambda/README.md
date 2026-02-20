@@ -1,9 +1,12 @@
 # Lambda (Node.js) sample
 
 ## Environment variables
+- `AWS_REGION` (or `AWS_DEFAULT_REGION`): AWSリージョン（必須）
 - `MAIL_FROM`: SESで検証済み送信元
 - `APP_TOKEN_CURRENT`: 現行アプリトークン（必須）
 - `APP_TOKEN_NEXT`: ローテーション用の次トークン（任意）
+
+ローカル実行時は、リポジトリルート `.env` または `lambda/.env` からも読み込み可能。
 
 ## API Gateway 想定
 - `POST /submit-answers`

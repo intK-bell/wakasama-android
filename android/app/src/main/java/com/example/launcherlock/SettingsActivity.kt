@@ -19,7 +19,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.example.launcherlock.model.LockDayMode
-import com.example.launcherlock.scheduler.LockScheduler
 import java.time.DayOfWeek
 
 class SettingsActivity : AppCompatActivity() {
@@ -31,6 +30,7 @@ class SettingsActivity : AppCompatActivity() {
     private val questionInputs = mutableListOf<EditText>()
     private val weekdayChecks = linkedMapOf<Int, CheckBox>()
     private lateinit var statusText: TextView
+    private lateinit var toggleLockButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +46,7 @@ class SettingsActivity : AppCompatActivity() {
         val lockModeSpinner = findViewById<Spinner>(R.id.lockModeSpinner)
         val resultText = findViewById<TextView>(R.id.settingsResultText)
         statusText = findViewById(R.id.statusText)
+        toggleLockButton = findViewById(R.id.runLockCheckButton)
 
         mailToInput.setText(prefs.getString("mail_to", ""))
         val lockModeOptions = listOf(
@@ -155,10 +156,9 @@ class SettingsActivity : AppCompatActivity() {
             finish()
         }
 
-        findViewById<Button>(R.id.runLockCheckButton).setOnClickListener {
-            LockScheduler.runImmediateLockCheck(this, this) {
-                updateLockStateLabel()
-            }
+        toggleLockButton.setOnClickListener {
+            toggleLockState()
+            updateLockStateLabel()
         }
 
         updateLockStateLabel()
@@ -168,11 +168,22 @@ class SettingsActivity : AppCompatActivity() {
         val locked = isLockedNow()
         val state = if (locked) getString(R.string.locked) else getString(R.string.unlocked)
         statusText.text = getString(R.string.current_state, state)
+        toggleLockButton.text = if (locked) {
+            getString(R.string.unlock_now)
+        } else {
+            getString(R.string.lock_now)
+        }
     }
 
     private fun isLockedNow(): Boolean {
         return getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
             .getBoolean("is_locked", false)
+    }
+
+    private fun toggleLockState() {
+        val prefs = getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
+        val current = prefs.getBoolean("is_locked", false)
+        prefs.edit { putBoolean("is_locked", !current) }
     }
 
     private fun currentQuestionValues(): List<String> {

@@ -1,6 +1,37 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.File
 
-val appTokenFromGradle = (project.findProperty("APP_TOKEN") as String?)?.trim().orEmpty()
+fun readDotEnv(file: File): Map<String, String> {
+    if (!file.exists()) return emptyMap()
+
+    return file.readLines()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() && !it.startsWith("#") && it.contains("=") }
+        .associate { line ->
+            val idx = line.indexOf("=")
+            val key = line.substring(0, idx).trim()
+            val rawValue = line.substring(idx + 1).trim()
+            val value = rawValue.removePrefix("\"").removeSuffix("\"")
+            key to value
+        }
+}
+
+fun resolveConfigValue(key: String, dotEnv: Map<String, String>): String {
+    val fromGradleProp = (project.findProperty(key) as String?)?.trim().orEmpty()
+    if (fromGradleProp.isNotEmpty()) return fromGradleProp
+
+    val fromEnv = System.getenv(key)?.trim().orEmpty()
+    if (fromEnv.isNotEmpty()) return fromEnv
+
+    return dotEnv[key]?.trim().orEmpty()
+}
+
+fun asBuildConfigString(value: String): String = "\"${value.replace("\"", "\\\"")}\""
+
+val dotEnv = readDotEnv(rootProject.file(".env"))
+val appToken = resolveConfigValue("APP_TOKEN", dotEnv)
+val defaultApiBaseUrl = resolveConfigValue("API_BASE_URL", dotEnv)
+val deviceId = resolveConfigValue("DEVICE_ID", dotEnv)
 
 plugins {
     id("com.android.application")
@@ -17,12 +48,22 @@ android {
         minSdk = 26
         //noinspection EditedTargetSdkVersion
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.4"
+        versionCode = 5
+        versionName = "1.0.5"
         buildConfigField(
             "String",
             "APP_TOKEN",
-            "\"${appTokenFromGradle.replace("\"", "\\\"")}\""
+            asBuildConfigString(appToken)
+        )
+        buildConfigField(
+            "String",
+            "DEFAULT_API_BASE_URL",
+            asBuildConfigString(defaultApiBaseUrl)
+        )
+        buildConfigField(
+            "String",
+            "DEVICE_ID",
+            asBuildConfigString(deviceId)
         )
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

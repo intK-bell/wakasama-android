@@ -1,6 +1,12 @@
+import "./env.js";
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 
-const ses = new SESv2Client({ region: process.env.AWS_REGION || "ap-northeast-1" });
+const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "";
+if (!awsRegion) {
+  throw new Error("AWS_REGION (or AWS_DEFAULT_REGION) is required");
+}
+
+const ses = new SESv2Client({ region: awsRegion });
 
 export async function sendAnswerMail({ subject, textBody, to }) {
   const from = process.env.MAIL_FROM;

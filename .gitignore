@@ -4,13 +4,27 @@
 # IDE
 .idea/
 *.iml
+.vscode/
 
 # Android / Gradle
 android/.gradle/
 android/build/
 android/**/build/
+android/local.properties
+android/.idea/
+android/app/release/
+*.apk
+*.aab
 
 # Lambda / Node
 lambda/node_modules/
 lambda/function.zip
 
+# Logs / env
+*.log
+.env
+.env.*
+!.env.example
+
+# Misc
+Thumbs.db

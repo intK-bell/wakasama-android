@@ -1,3 +1,4 @@
+import "./env.js";
 import { sendAnswerMail } from "./mailer.js";
 import { buildMailText, validatePayload } from "./validate.js";
 

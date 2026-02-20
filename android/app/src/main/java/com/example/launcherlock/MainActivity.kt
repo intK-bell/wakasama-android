@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.text.InputType
 import android.util.Log
 import android.view.MotionEvent
@@ -51,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         if (!prefs.contains("api_base_url")) {
             prefs.edit {
-                putString("api_base_url", "https://guh3h3lma1.execute-api.ap-northeast-1.amazonaws.com/prod")
+                putString("api_base_url", BuildConfig.DEFAULT_API_BASE_URL.trim())
                 putString("mail_to", "")
                 putInt("question_count", 2)
                 putString("question_1", getString(R.string.default_question_1))
@@ -86,9 +87,15 @@ class MainActivity : AppCompatActivity() {
                 val dao = AppDatabase.getInstance(applicationContext).pendingSubmissionDao()
                 val repo = SubmissionRepository(api, dao)
                 val useCase = AnswerUnlockUseCase(repo)
+                val deviceId = BuildConfig.DEVICE_ID.trim().ifBlank {
+                    Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+                        ?.trim()
+                        .orEmpty()
+                        .ifBlank { "device-unknown" }
+                }
 
                 val success = useCase.submitAnswersAndUnlock(
-                    deviceId = "child-phone-01",
+                    deviceId = deviceId,
                     to = mailTo,
                     answers = answers
                 )
