@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/moon_white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,45 +14,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/settings_title"
+            android:textColor="@color/lotus_ink"
             android:textSize="22sp"
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/mailToInput"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="@string/hint_mail_to"
-            android:inputType="textEmailAddress" />
-
-        <EditText
-            android:id="@+id/questionCountInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/hint_question_count"
-            android:inputType="number" />
-
-        <Button
-            android:id="@+id/applyQuestionCountButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/apply_question_count" />
-
-        <TextView
-            android:id="@+id/lockModeLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/lock_mode_label"
+            android:text="@string/question_count_label"
+            android:textColor="@color/lotus_ink"
             android:textStyle="bold" />
 
         <Spinner
-            android:id="@+id/lockModeSpinner"
+            android:id="@+id/questionCountSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
+            android:layout_marginTop="6dp"
+            android:backgroundTint="@color/duck_egg_cyan_deep"
+            android:popupBackground="@color/moon_white" />
 
         <LinearLayout
             android:id="@+id/questionsContainer"
@@ -60,18 +41,77 @@
             android:layout_marginTop="8dp"
             android:orientation="vertical" />
 
+        <EditText
+            android:id="@+id/mailToInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:autofillHints="emailAddress"
+            android:hint="@string/hint_mail_to"
+            android:inputType="textEmailAddress"
+            android:textColor="@color/lotus_ink"
+            android:textColorHint="@color/duck_egg_cyan_deep"
+            android:backgroundTint="@color/duck_egg_cyan_deep" />
+
+        <TextView
+            android:id="@+id/mailDeliveryNoteText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/mail_delivery_note"
+            android:textColor="@color/duck_egg_cyan_deep"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/lockModeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/lock_mode_label"
+            android:textColor="@color/lotus_ink"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/lockModeSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:backgroundTint="@color/duck_egg_cyan_deep"
+            android:popupBackground="@color/moon_white" />
+
+        <TextView
+            android:id="@+id/weekdaySelectLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/weekday_select_label"
+            android:textColor="@color/lotus_ink"
+            android:visibility="gone"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/weekdayContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:visibility="gone"
+            android:orientation="vertical" />
+
         <Button
             android:id="@+id/saveSettingsButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/save_settings" />
+            android:backgroundTint="@color/duck_egg_cyan_deep"
+            android:text="@string/save_settings"
+            android:textColor="@color/lotus_ink" />
 
         <TextView
             android:id="@+id/settingsResultText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
+            android:textColor="@color/lotus_ink"
             android:textSize="14sp" />
 
     </LinearLayout>

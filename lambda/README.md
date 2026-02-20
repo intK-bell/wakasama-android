@@ -2,7 +2,6 @@
 
 ## Environment variables
 - `MAIL_FROM`: SESで検証済み送信元
-- `MAIL_TO`: 宛先省略時のフォールバック
 - `APP_TOKEN_CURRENT`: 現行アプリトークン（必須）
 - `APP_TOKEN_NEXT`: ローテーション用の次トークン（任意）
 

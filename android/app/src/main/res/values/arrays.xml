@@ -1,0 +1,24 @@
+<resources>
+    <string-array name="unlock_success_messages">
+        <item>今日もようがんばったね！</item>
+        <item>いい集中やったね、えらい！</item>
+        <item>一歩ずつ進めてて最高たい。</item>
+        <item>ちゃんとやり切ったね、すごか！</item>
+        <item>その調子、その調子！</item>
+        <item>よく頑張ったけん、胸張ってよかよ。</item>
+        <item>積み重ねがちゃんと力になっとるよ。</item>
+        <item>ナイスチャレンジ！ばっちりたい。</item>
+        <item>今日の自分に花丸たい。</item>
+        <item>あきらめんかったの、ほんとにえらい！</item>
+        <item>ここまでやれたの、すごく価値あるよ。</item>
+        <item>コツコツ続けられて最高ばい。</item>
+        <item>よし、次もその勢いでいこう！</item>
+        <item>よく考えて答えられたね、立派たい。</item>
+        <item>今日のがんばり、ちゃんと伝わっとるよ。</item>
+        <item>ええ流れやね、このままいこう！</item>
+        <item>やるやん！ほんとにかっこいい。</item>
+        <item>大丈夫、着実に成長しとるよ。</item>
+        <item>最後までやり切って素晴らしか！</item>
+        <item>今日もよくできました。自信持ってよか！</item>
+    </string-array>
+</resources>

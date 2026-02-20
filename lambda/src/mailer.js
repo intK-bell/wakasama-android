@@ -4,10 +4,10 @@ const ses = new SESv2Client({ region: process.env.AWS_REGION || "ap-northeast-1"
 
 export async function sendAnswerMail({ subject, textBody, to }) {
   const from = process.env.MAIL_FROM;
-  const destination = to || process.env.MAIL_TO;
+  const destination = String(to || "").trim();
 
   if (!from || !destination) {
-    throw new Error("MAIL_FROM and destination(to or MAIL_TO) are required");
+    throw new Error("MAIL_FROM and destination(to) are required");
   }
 
   const command = new SendEmailCommand({

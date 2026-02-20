@@ -1,6 +1,6 @@
 package com.example.launcherlock.network
 
 data class ApiResponse(
-    val ok: Boolean,
-    val message: String
+    val ok: Boolean? = null,
+    val message: String? = null
 )

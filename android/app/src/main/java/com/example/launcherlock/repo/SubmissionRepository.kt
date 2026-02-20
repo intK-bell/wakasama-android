@@ -22,13 +22,15 @@ class SubmissionRepository(
     suspend fun submitOrQueue(payload: AnswerPayload): Boolean {
         return try {
             val response = api.submitAnswers(payload)
-            if (response.isSuccessful && response.body()?.ok == true) {
+            val bodyOk = response.body()?.ok
+            val accepted = response.isSuccessful && bodyOk != false
+            if (accepted) {
                 Log.i(TAG, "submitOrQueue success code=${response.code()}")
                 true
             } else {
                 Log.w(
                     TAG,
-                    "submitOrQueue failed code=${response.code()} body=${response.errorBody()?.string()}"
+                    "submitOrQueue failed code=${response.code()} ok=$bodyOk body=${response.errorBody()?.string()}"
                 )
                 queue(payload)
                 false
@@ -52,15 +54,17 @@ class SubmissionRepository(
 
             val ok = try {
                 val response = api.submitAnswers(payload)
-                if (!response.isSuccessful || response.body()?.ok != true) {
+                val bodyOk = response.body()?.ok
+                val accepted = response.isSuccessful && bodyOk != false
+                if (!accepted) {
                     Log.w(
                         TAG,
-                        "flushQueue failed item=${item.id} code=${response.code()} body=${response.errorBody()?.string()}"
+                        "flushQueue failed item=${item.id} code=${response.code()} ok=$bodyOk body=${response.errorBody()?.string()}"
                     )
                 } else {
                     Log.i(TAG, "flushQueue success item=${item.id} code=${response.code()}")
                 }
-                response.isSuccessful && response.body()?.ok == true
+                accepted
             } catch (e: Exception) {
                 Log.e(TAG, "flushQueue exception item=${item.id}: ${e.message}", e)
                 false

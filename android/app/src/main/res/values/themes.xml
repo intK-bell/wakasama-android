@@ -1,5 +1,18 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.LauncherLock" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:statusBarColor" tools:targetApi="l">@android:color/black</item>
+<resources>
+    <style name="Theme.LauncherLock" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/lotus_pink_deep</item>
+        <item name="colorPrimaryVariant">@color/duck_egg_cyan_deep</item>
+        <item name="colorSecondary">@color/duck_egg_cyan_deep</item>
+        <item name="colorSecondaryVariant">@color/lotus_pink_deep</item>
+        <item name="colorSurface">@color/moon_white</item>
+        <item name="android:colorBackground">@color/moon_white</item>
+        <item name="colorOnPrimary">@color/moon_white</item>
+        <item name="colorOnSecondary">@color/moon_white</item>
+        <item name="colorOnSurface">@color/lotus_ink</item>
+        <item name="colorOnBackground">@color/lotus_ink</item>
+        <item name="colorError">@color/lotus_pink_deep</item>
+        <item name="android:statusBarColor">@color/moon_white</item>
+        <item name="android:navigationBarColor">@color/moon_white</item>
+        <item name="android:windowBackground">@color/moon_white</item>
     </style>
 </resources>

@@ -15,8 +15,8 @@ export function validatePayload(payload) {
     return "questions must be a non-empty array";
   }
 
-  if (payload.to != null && (typeof payload.to !== "string" || payload.to.trim() === "")) {
-    return "to must be a non-empty string when provided";
+  if (typeof payload.to !== "string" || payload.to.trim() === "") {
+    return "to is required";
   }
 
   for (const item of payload.questions) {

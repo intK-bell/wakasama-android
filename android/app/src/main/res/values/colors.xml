@@ -1,0 +1,9 @@
+<resources>
+    <color name="moon_white">#EEF3F7</color>
+    <color name="lotus_pink">#E9D7DF</color>
+    <color name="duck_egg_cyan">#D7E8E5</color>
+    <color name="moon_white_deep">#DCE4EA</color>
+    <color name="lotus_pink_deep">#9C828C</color>
+    <color name="duck_egg_cyan_deep">#88A8A1</color>
+    <color name="lotus_ink">#6D5A63</color>
+</resources>
