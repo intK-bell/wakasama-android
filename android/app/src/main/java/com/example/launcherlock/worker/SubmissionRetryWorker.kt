@@ -7,6 +7,7 @@ import com.example.launcherlock.BuildConfig
 import com.example.launcherlock.network.NetworkModule
 import com.example.launcherlock.queue.AppDatabase
 import com.example.launcherlock.repo.SubmissionRepository
+import com.example.launcherlock.security.DeviceSigningManager
 
 class SubmissionRetryWorker(
     appContext: Context,
@@ -20,9 +21,10 @@ class SubmissionRetryWorker(
 
         if (baseUrl.isBlank() || token.isBlank()) return Result.retry()
 
-        val api = NetworkModule.createApi(baseUrl) { token }
+        val signingManager = DeviceSigningManager(applicationContext)
+        val api = NetworkModule.createApi(applicationContext, baseUrl)
         val dao = AppDatabase.getInstance(applicationContext).pendingSubmissionDao()
-        val repo = SubmissionRepository(api, dao)
+        val repo = SubmissionRepository(api, dao, signingManager)
         repo.flushQueue()
         return Result.success()
     }

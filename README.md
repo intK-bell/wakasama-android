@@ -26,11 +26,12 @@ See `LICENSE` for usage restrictions. Unauthorized use is prohibited.
 
 Set required environment variables (details: `lambda/README.md`):
 
-- `APP_TOKEN_CURRENT` (required)
-- `APP_TOKEN_NEXT` (optional)
+- `SECURITY_TABLE` (required)
+- `APP_TOKEN_CURRENT` / `APP_TOKEN_NEXT` (migration period)
 - SES sender/region related variables
 
 ## Notes
 
 - Android build config (`APP_TOKEN`, `API_BASE_URL`, `DEVICE_ID`) is loaded from Gradle property / process env / `.env` in this order.
 - Lambda secrets/tokens are loaded from process env; for local development, `.env` is also supported.
+- Submit API uses request signatures (`X-Signature` headers). Legacy `X-App-Token` is kept only for migration compatibility.

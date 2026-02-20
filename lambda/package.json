@@ -8,6 +8,8 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@aws-sdk/client-sesv2": "^3.872.0"
+    "@aws-sdk/client-dynamodb": "^3.872.0",
+    "@aws-sdk/client-sesv2": "^3.872.0",
+    "@aws-sdk/lib-dynamodb": "^3.872.0"
   }
 }

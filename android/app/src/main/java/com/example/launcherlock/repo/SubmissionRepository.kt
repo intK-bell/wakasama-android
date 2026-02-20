@@ -3,14 +3,17 @@ package com.example.launcherlock.repo
 import android.util.Log
 import com.example.launcherlock.model.AnswerPayload
 import com.example.launcherlock.network.AnswerApi
+import com.example.launcherlock.network.DeviceKeyRegistrationRequest
 import com.example.launcherlock.queue.PendingSubmissionDao
 import com.example.launcherlock.queue.PendingSubmissionEntity
+import com.example.launcherlock.security.DeviceSigningManager
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 class SubmissionRepository(
     private val api: AnswerApi,
     private val dao: PendingSubmissionDao,
+    private val signingManager: DeviceSigningManager,
     moshi: Moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 ) {
     companion object {
@@ -20,6 +23,10 @@ class SubmissionRepository(
     private val adapter = moshi.adapter(AnswerPayload::class.java)
 
     suspend fun submitOrQueue(payload: AnswerPayload): Boolean {
+        if (!registerDeviceKey(payload.deviceId)) {
+            queue(payload)
+            return false
+        }
         return try {
             val response = api.submitAnswers(payload)
             val bodyOk = response.body()?.ok
@@ -53,6 +60,9 @@ class SubmissionRepository(
             }
 
             val ok = try {
+                if (!registerDeviceKey(payload.deviceId)) {
+                    false
+                } else {
                 val response = api.submitAnswers(payload)
                 val bodyOk = response.body()?.ok
                 val accepted = response.isSuccessful && bodyOk != false
@@ -65,6 +75,7 @@ class SubmissionRepository(
                     Log.i(TAG, "flushQueue success item=${item.id} code=${response.code()}")
                 }
                 accepted
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "flushQueue exception item=${item.id}: ${e.message}", e)
                 false
@@ -89,6 +100,34 @@ class SubmissionRepository(
     private suspend fun queue(payload: AnswerPayload) {
         val json = adapter.toJson(payload)
         dao.insert(PendingSubmissionEntity(payloadJson = json))
+    }
+
+    private suspend fun registerDeviceKey(deviceId: String): Boolean {
+        val localDeviceId = signingManager.deviceId()
+        if (deviceId.trim() != localDeviceId.trim()) {
+            Log.w(TAG, "registerDeviceKey skipped: payload deviceId mismatch")
+            return false
+        }
+        return try {
+            val response = api.registerDeviceKey(
+                DeviceKeyRegistrationRequest(
+                    deviceId = localDeviceId,
+                    publicKeyPem = signingManager.publicKeyPem()
+                )
+            )
+            val bodyOk = response.body()?.ok
+            val accepted = response.isSuccessful && bodyOk != false
+            if (!accepted) {
+                Log.w(
+                    TAG,
+                    "registerDeviceKey failed code=${response.code()} ok=$bodyOk body=${response.errorBody()?.string()}"
+                )
+            }
+            accepted
+        } catch (e: Exception) {
+            Log.e(TAG, "registerDeviceKey exception: ${e.message}", e)
+            false
+        }
     }
 
     private fun computeNextRetry(retryCount: Int): Long {

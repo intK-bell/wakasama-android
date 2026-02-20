@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.text.InputType
 import android.util.Log
 import android.view.MotionEvent
@@ -25,6 +24,7 @@ import com.example.launcherlock.network.NetworkModule
 import com.example.launcherlock.queue.AppDatabase
 import com.example.launcherlock.repo.AnswerUnlockUseCase
 import com.example.launcherlock.repo.SubmissionRepository
+import com.example.launcherlock.security.DeviceSigningManager
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -71,7 +71,8 @@ class MainActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 val baseUrl = prefs.getString("api_base_url", "") ?: ""
-                val appToken = BuildConfig.APP_TOKEN.trim()
+                val signingManager = DeviceSigningManager(applicationContext)
+                val appToken = signingManager.appToken()
 
                 if (baseUrl.isBlank() || appToken.isBlank()) {
                     showErrorPopup(getString(R.string.msg_missing_config))
@@ -83,16 +84,11 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                val api = NetworkModule.createApi(baseUrl) { appToken }
+                val api = NetworkModule.createApi(applicationContext, baseUrl)
                 val dao = AppDatabase.getInstance(applicationContext).pendingSubmissionDao()
-                val repo = SubmissionRepository(api, dao)
+                val repo = SubmissionRepository(api, dao, signingManager)
                 val useCase = AnswerUnlockUseCase(repo)
-                val deviceId = BuildConfig.DEVICE_ID.trim().ifBlank {
-                    Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-                        ?.trim()
-                        .orEmpty()
-                        .ifBlank { "device-unknown" }
-                }
+                val deviceId = signingManager.deviceId()
 
                 val success = useCase.submitAnswersAndUnlock(
                     deviceId = deviceId,
