@@ -46,17 +46,6 @@ function getHeader(event, name) {
   return "";
 }
 
-function isLegacyAuthorized(event) {
-  const appToken = String(getHeader(event, "x-app-token") || "").trim();
-  const current = String(process.env.APP_TOKEN_CURRENT || "").trim();
-  const next = String(process.env.APP_TOKEN_NEXT || "").trim();
-
-  if (!appToken) return false;
-  if (!current && !next) return false;
-
-  return appToken === current || appToken === next;
-}
-
 function pathOf(event) {
   return String(
     event?.rawPath ||
@@ -104,6 +93,42 @@ async function isSignatureAuthorized(event, rawBody) {
   return { ok: true, deviceId };
 }
 
+async function isRegistrationSignatureAuthorized(event, rawBody, payload) {
+  const deviceId = String(getHeader(event, "x-device-id") || "").trim();
+  const timestamp = String(getHeader(event, "x-timestamp") || "").trim();
+  const nonce = String(getHeader(event, "x-nonce") || "").trim();
+  const signature = String(getHeader(event, "x-signature") || "").trim();
+
+  const headerErr = validateSignatureHeaders({ deviceId, timestamp, nonce });
+  if (headerErr) {
+    return { ok: false, message: headerErr };
+  }
+  if (deviceId !== String(payload.deviceId || "").trim()) {
+    return { ok: false, message: "device id mismatch" };
+  }
+
+  const nonceReserved = await reserveNonce(
+    deviceId,
+    nonce,
+    Math.floor(Date.now() / 1000) + 10 * 60
+  );
+  if (!nonceReserved) {
+    return { ok: false, message: "replayed nonce" };
+  }
+
+  const canonical = buildCanonical({ deviceId, timestamp, nonce, rawBody });
+  const verified = verifySignature({
+    publicKeyPem: payload.publicKeyPem,
+    canonical,
+    signatureBase64: signature
+  });
+  if (!verified) {
+    return { ok: false, message: "invalid signature" };
+  }
+
+  return { ok: true };
+}
+
 function validateRegistrationPayload(payload) {
   if (!payload || typeof payload !== "object") return "invalid payload";
   if (typeof payload.deviceId !== "string" || payload.deviceId.trim() === "") {
@@ -130,15 +155,16 @@ export const handler = async (event) => {
     !Array.isArray(payload.questions);
 
   if (path.endsWith("/register-device-key") || looksLikeRegisterPayload) {
-    if (!isLegacyAuthorized(event)) {
-      return response(401, { ok: false, message: "unauthorized" });
-    }
     if (!payload) {
       return response(400, { ok: false, message: "invalid JSON" });
     }
     const err = validateRegistrationPayload(payload);
     if (err) {
       return response(400, { ok: false, message: err });
+    }
+    const auth = await isRegistrationSignatureAuthorized(event, rawBody, payload);
+    if (!auth.ok) {
+      return response(401, { ok: false, message: auth.message || "unauthorized" });
     }
 
     try {
@@ -155,8 +181,7 @@ export const handler = async (event) => {
   }
 
   const signatureAuth = await isSignatureAuthorized(event, rawBody);
-  const legacyAuth = isLegacyAuthorized(event);
-  if (!signatureAuth.ok && !legacyAuth) {
+  if (!signatureAuth.ok) {
     return response(401, { ok: false, message: signatureAuth.message || "unauthorized" });
   }
 

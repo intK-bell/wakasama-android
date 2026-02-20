@@ -4,16 +4,13 @@
 - `AWS_REGION` (or `AWS_DEFAULT_REGION`): AWSリージョン（必須）
 - `SECURITY_TABLE`: 署名公開鍵・nonceを保存するDynamoDBテーブル（必須）
 - `MAIL_FROM`: SESで検証済み送信元
-- `APP_TOKEN_CURRENT`: 移行期間の登録用トークン（推奨）
-- `APP_TOKEN_NEXT`: トークンローテーション用（任意）
 
 ローカル実行時は、リポジトリルート `.env` または `lambda/.env` からも読み込み可能。
 
 ## API Gateway 想定
-- `POST /register-device-key`（移行期間。`X-App-Token` 必須）
+- `POST /register-device-key`
 - `POST /submit-answers`
 - 認証: `X-Signature` / `X-Device-Id` / `X-Timestamp` / `X-Nonce`
-- 互換: 移行期間のみ `X-App-Token` も許可
 - Lambda proxy integration
 
 ## Deploy checklist
