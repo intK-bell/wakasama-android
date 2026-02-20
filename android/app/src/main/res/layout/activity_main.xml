@@ -1,75 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/moon_white">
+    android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- 1. ルート: 背景 -->
+    <ImageView
+        android:id="@+id/bgScene"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/img_04_scene_bg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 2. 上部帯エリア -->
+    <ImageView
+        android:id="@+id/headerBar"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:adjustViewBounds="true"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/img_02_header_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/titleText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/main_title"
-            android:textColor="@color/lotus_ink"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+    <ImageView
+        android:id="@+id/retainerAvatar"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:contentDescription="@null"
+        android:src="@drawable/img_03_retainer_avatar"
+        app:layout_constraintStart_toStartOf="@id/headerBar"
+        app:layout_constraintTop_toTopOf="@id/headerBar" />
 
-        <Button
-            android:id="@+id/openSettingsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginTop="6dp"
-            android:background="@android:color/transparent"
-            android:text="@string/open_settings"
-            android:textColor="@color/lotus_ink"
-            tools:ignore="TextSizeCheck" />
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="24dp"
+        android:text="@string/main_title"
+        android:textColor="@color/lotus_ink"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/retainerAvatar"
+        app:layout_constraintEnd_toEndOf="@id/headerBar"
+        app:layout_constraintStart_toEndOf="@id/retainerAvatar"
+        app:layout_constraintTop_toTopOf="@id/retainerAvatar" />
+
+    <!-- 3. 設定ボタン -->
+    <View
+        android:id="@+id/openSettingsButton"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="@id/retainerAvatar"
+        app:layout_constraintEnd_toEndOf="@id/retainerAvatar"
+        app:layout_constraintStart_toStartOf="@id/retainerAvatar"
+        app:layout_constraintTop_toTopOf="@id/retainerAvatar" />
+
+    <!-- 5. 下パネル -->
+    <ImageView
+        android:id="@+id/panelFrame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="-48dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@null"
+        android:scaleType="fitXY"
+        android:src="@drawable/img_06_panel_frame"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/wakasama" />
+
+    <!-- 4. 若様キャラ -->
+    <ImageView
+        android:id="@+id/wakasama"
+        android:layout_width="128dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/img_05_wakasama_character"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerBar" />
+
+    <!-- 5.1. contentArea (スクロール対応) -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentArea"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginBottom="32dp"
+        android:contentDescription="@string/question_answer_area_description"
+        app:layout_constraintBottom_toTopOf="@+id/submitButton"
+        app:layout_constraintEnd_toEndOf="@id/panelFrame"
+        app:layout_constraintStart_toStartOf="@id/panelFrame"
+        app:layout_constraintTop_toTopOf="@id/panelFrame">
 
         <LinearLayout
             android:id="@+id/questionAnswerContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:minHeight="260dp"
             android:orientation="vertical" />
+    </androidx.core.widget.NestedScrollView>
 
-        <Button
-            android:id="@+id/submitButton"
+    <!-- 6. 送信ボタン -->
+    <FrameLayout
+        android:id="@+id/submitButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginBottom="32dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@id/panelFrame"
+        app:layout_constraintEnd_toEndOf="@id/panelFrame"
+        app:layout_constraintStart_toStartOf="@id/panelFrame">
+
+        <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="@color/duck_egg_cyan_deep"
-            android:maxWidth="480dp"
-            android:text="@string/submit_and_unlock"
-            android:textColor="@color/lotus_ink"
-            tools:ignore="VisualLintButtonSize" />
+            android:adjustViewBounds="true"
+            android:contentDescription="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/img_07_bottom_button_blank" />
 
         <TextView
-            android:id="@+id/statusText"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/main_status_placeholder"
+            android:layout_gravity="center"
+            android:text="@string/submit_and_unlock"
             android:textColor="@color/lotus_ink"
-            android:textSize="16sp" />
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/runLockCheckButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
-            android:backgroundTint="@color/duck_egg_cyan_deep"
-            android:maxWidth="480dp"
-            android:text="@string/run_lock_check"
-            android:textColor="@color/lotus_ink"
-            tools:ignore="VisualLintButtonSize" />
+    </FrameLayout>
 
-    </LinearLayout>
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

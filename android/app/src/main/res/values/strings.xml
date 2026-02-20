@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">若様の宿題</string>
-    <string name="main_title">若様、学問のほどをお聞かせくださりませ</string>
+    <string name="main_title">若様、\n学問のほどをお聞かせくださりませ</string>
     <string name="main_status_placeholder">けっかい：-</string>
     <string name="run_lock_check">けっかいをはる</string>
     <string name="submit_and_unlock">かくかくしかじかじゃ</string>
@@ -43,4 +43,5 @@
     <string name="msg_weekday_required">曜日指定モードでは1つ以上の曜日を選んで</string>
     <string name="msg_invalid_question_count">質問数は1〜20で入力して</string>
     <string name="msg_question_count_updated">質問入力欄を更新した</string>
+    <string name="question_answer_area_description">質問と回答の入力欄</string>
 </resources>

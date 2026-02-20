@@ -11,7 +11,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
-import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -25,7 +24,6 @@ import com.example.launcherlock.network.NetworkModule
 import com.example.launcherlock.queue.AppDatabase
 import com.example.launcherlock.repo.AnswerUnlockUseCase
 import com.example.launcherlock.repo.SubmissionRepository
-import com.example.launcherlock.scheduler.LockScheduler
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -39,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         val answerInput: EditText
     )
 
-    private lateinit var statusText: TextView
     private lateinit var questionAnswerContainer: LinearLayout
     private val uiHandler = Handler(Looper.getMainLooper())
     private var settingsLongPressTriggered = false
@@ -50,7 +47,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val prefs = getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
-        statusText = findViewById(R.id.statusText)
         questionAnswerContainer = findViewById(R.id.questionAnswerContainer)
 
         if (!prefs.contains("api_base_url")) {
@@ -65,15 +61,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.runLockCheckButton).setOnClickListener {
-            LockScheduler.runImmediateLockCheck(this)
-            updateLockStateLabel()
-            updateLockTaskMode()
-        }
-
         setupOpenSettingsGuard()
 
-        findViewById<Button>(R.id.submitButton).setOnClickListener {
+        findViewById<View>(R.id.submitButton).setOnClickListener {
             val answers = questionRows.map {
                 QuestionAnswer(q = it.question, a = it.answerInput.text.toString())
             }.filter { it.q.isNotBlank() || it.a.isNotBlank() }
@@ -83,14 +73,12 @@ class MainActivity : AppCompatActivity() {
                 val appToken = BuildConfig.APP_TOKEN.trim()
 
                 if (baseUrl.isBlank() || appToken.isBlank()) {
-                    statusText.text = getString(R.string.msg_missing_config)
-                    showErrorPopup()
+                    showErrorPopup(getString(R.string.msg_missing_config))
                     return@launch
                 }
                 val mailTo = prefs.getString("mail_to", null)?.trim().orEmpty()
                 if (mailTo.isBlank()) {
-                    statusText.text = getString(R.string.msg_missing_mail_to)
-                    showErrorPopup()
+                    showErrorPopup(getString(R.string.msg_missing_mail_to))
                     return@launch
                 }
 
@@ -105,21 +93,16 @@ class MainActivity : AppCompatActivity() {
                     answers = answers
                 )
 
-                statusText.text = if (success) {
-                    getString(R.string.msg_sent_and_unlocked)
-                } else {
-                    getString(R.string.msg_queued)
-                }
                 if (success) {
                     val message = resources.getStringArray(R.array.unlock_success_messages).random()
                     showSuccessPopup(message)
                 } else {
-                    showErrorPopup()
+                    showErrorPopup(getString(R.string.msg_queued))
                 }
             }
         }
         applyConfiguredQuestions()
-        updateLockStateLabel()
+        updateLockTaskMode()
     }
 
     override fun onResume() {
@@ -131,12 +114,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         uiHandler.removeCallbacksAndMessages(null)
-    }
-
-    private fun updateLockStateLabel() {
-        val locked = isLockedNow()
-        val state = if (locked) getString(R.string.locked) else getString(R.string.unlocked)
-        statusText.text = getString(R.string.current_state, state)
     }
 
     private fun isLockedNow(): Boolean {
@@ -206,7 +183,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupOpenSettingsGuard() {
-        val button = findViewById<Button>(R.id.openSettingsButton)
+        val button = findViewById<View>(R.id.openSettingsButton)
         val touchSlop = ViewConfiguration.get(this).scaledTouchSlop
         val openRunnable = Runnable {
             settingsLongPressTriggered = true
@@ -223,7 +200,7 @@ class MainActivity : AppCompatActivity() {
                     settingsLongPressTriggered = false
                     downX = event.x
                     downY = event.y
-                    uiHandler.postDelayed(openRunnable, 5_000L)
+                    uiHandler.postDelayed(openRunnable, 2_000L)
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -259,9 +236,9 @@ class MainActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun showErrorPopup() {
+    private fun showErrorPopup(message: String) {
         AlertDialog.Builder(this)
-            .setMessage(getString(R.string.popup_error_message))
+            .setMessage(message)
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
@@ -273,7 +250,6 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
                     .edit { putBoolean("is_locked", false) }
-                updateLockStateLabel()
                 updateLockTaskMode()
                 openHomeScreen()
             }

@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.example.launcherlock.model.LockDayMode
+import com.example.launcherlock.scheduler.LockScheduler
 import java.time.DayOfWeek
 
 class SettingsActivity : AppCompatActivity() {
@@ -29,6 +30,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private val questionInputs = mutableListOf<EditText>()
     private val weekdayChecks = linkedMapOf<Int, CheckBox>()
+    private lateinit var statusText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +45,7 @@ class SettingsActivity : AppCompatActivity() {
         val weekdayContainer = findViewById<LinearLayout>(R.id.weekdayContainer)
         val lockModeSpinner = findViewById<Spinner>(R.id.lockModeSpinner)
         val resultText = findViewById<TextView>(R.id.settingsResultText)
+        statusText = findViewById(R.id.statusText)
 
         mailToInput.setText(prefs.getString("mail_to", ""))
         val lockModeOptions = listOf(
@@ -151,6 +154,25 @@ class SettingsActivity : AppCompatActivity() {
             setResult(Activity.RESULT_OK, Intent())
             finish()
         }
+
+        findViewById<Button>(R.id.runLockCheckButton).setOnClickListener {
+            LockScheduler.runImmediateLockCheck(this, this) {
+                updateLockStateLabel()
+            }
+        }
+
+        updateLockStateLabel()
+    }
+
+    private fun updateLockStateLabel() {
+        val locked = isLockedNow()
+        val state = if (locked) getString(R.string.locked) else getString(R.string.unlocked)
+        statusText.text = getString(R.string.current_state, state)
+    }
+
+    private fun isLockedNow(): Boolean {
+        return getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
+            .getBoolean("is_locked", false)
     }
 
     private fun currentQuestionValues(): List<String> {

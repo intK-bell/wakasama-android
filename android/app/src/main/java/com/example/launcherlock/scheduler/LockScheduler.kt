@@ -1,11 +1,14 @@
 package com.example.launcherlock.scheduler
 
 import android.content.Context
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.launcherlock.worker.LockCheckWorker
 import com.example.launcherlock.worker.SubmissionRetryWorker
@@ -57,8 +60,21 @@ object LockScheduler {
         )
     }
 
-    fun runImmediateLockCheck(context: Context) {
+    fun runImmediateLockCheck(context: Context, owner: LifecycleOwner, onFinished: () -> Unit) {
         val oneShot = OneTimeWorkRequestBuilder<LockCheckWorker>().build()
-        WorkManager.getInstance(context).enqueue(oneShot)
+        val workManager = WorkManager.getInstance(context)
+        workManager.enqueue(oneShot)
+
+        val liveData = workManager.getWorkInfoByIdLiveData(oneShot.id)
+        liveData.observe(owner, object : Observer<WorkInfo?> {
+            override fun onChanged(value: WorkInfo?) {
+                if (value?.state == WorkInfo.State.SUCCEEDED ||
+                    value?.state == WorkInfo.State.FAILED ||
+                    value?.state == WorkInfo.State.CANCELLED) {
+                    onFinished()
+                    liveData.removeObserver(this)
+                }
+            }
+        })
     }
 }

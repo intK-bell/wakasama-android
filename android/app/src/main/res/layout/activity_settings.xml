@@ -114,5 +114,25 @@
             android:textColor="@color/lotus_ink"
             android:textSize="14sp" />
 
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/main_status_placeholder"
+            android:textColor="@color/lotus_ink"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/runLockCheckButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="@color/duck_egg_cyan_deep"
+            android:maxWidth="480dp"
+            android:text="@string/run_lock_check"
+            android:textColor="@color/lotus_ink" />
+
     </LinearLayout>
 </ScrollView>
