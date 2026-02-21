@@ -19,9 +19,19 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/questionSectionLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:text="@string/section_question"
+            android:textColor="@color/lotus_ink"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:text="@string/question_count_label"
             android:textColor="@color/lotus_ink"
             android:textStyle="bold" />
@@ -34,6 +44,15 @@
             android:backgroundTint="@color/duck_egg_cyan_deep"
             android:popupBackground="@color/moon_white" />
 
+        <TextView
+            android:id="@+id/questionContentLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/question_content_label"
+            android:textColor="@color/lotus_ink"
+            android:textStyle="bold" />
+
         <LinearLayout
             android:id="@+id/questionsContainer"
             android:layout_width="match_parent"
@@ -41,11 +60,21 @@
             android:layout_marginTop="8dp"
             android:orientation="vertical" />
 
+        <TextView
+            android:id="@+id/sendSectionLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/section_send"
+            android:textColor="@color/lotus_ink"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <EditText
             android:id="@+id/mailToInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="10dp"
             android:autofillHints="emailAddress"
             android:hint="@string/hint_mail_to"
             android:inputType="textEmailAddress"
@@ -63,10 +92,29 @@
             android:textSize="12sp" />
 
         <TextView
+            android:id="@+id/kekkaiSectionLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/section_kekkai"
+            android:textColor="@color/lotus_ink"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/reservationSectionLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/section_kekkai_reservation"
+            android:textColor="@color/lotus_ink"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/lockModeLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:text="@string/lock_mode_label"
             android:textColor="@color/lotus_ink"
             android:textStyle="bold" />
@@ -125,37 +173,49 @@
             android:textColor="@color/lotus_ink" />
 
         <TextView
-            android:id="@+id/normalHomeLabel"
+            android:id="@+id/operationSectionLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/normal_home_label"
+            android:layout_marginTop="14dp"
+            android:text="@string/section_kekkai_operation"
             android:textColor="@color/lotus_ink"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/normalHomeValue"
+            android:id="@+id/statusText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/normal_home_not_selected"
+            android:layout_marginTop="8dp"
+            android:text="@string/main_status_placeholder"
             android:textColor="@color/lotus_ink"
             android:textSize="16sp" />
 
         <Button
-            android:id="@+id/selectNormalHomeButton"
+            android:id="@+id/runLockCheckButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
             android:backgroundTint="@color/duck_egg_cyan_deep"
-            android:text="@string/select_normal_home"
+            android:maxWidth="480dp"
+            android:text="@string/run_lock_check"
             android:textColor="@color/lotus_ink" />
+
+        <TextView
+            android:id="@+id/saveSectionLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/section_save"
+            android:textColor="@color/lotus_ink"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/saveSettingsButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:backgroundTint="@color/duck_egg_cyan_deep"
             android:text="@string/save_settings"
             android:textColor="@color/lotus_ink" />
@@ -169,24 +229,56 @@
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/statusText"
+            android:id="@+id/advancedSettingsLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/main_status_placeholder"
+            android:layout_marginTop="14dp"
+            android:text="@string/advanced_settings_label"
             android:textColor="@color/lotus_ink"
-            android:textSize="16sp" />
+            android:textStyle="bold" />
 
         <Button
-            android:id="@+id/runLockCheckButton"
+            android:id="@+id/toggleAdvancedSettingsButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="6dp"
             android:backgroundTint="@color/duck_egg_cyan_deep"
-            android:maxWidth="480dp"
-            android:text="@string/run_lock_check"
+            android:text="@string/show_advanced_settings"
             android:textColor="@color/lotus_ink" />
+
+        <LinearLayout
+            android:id="@+id/advancedSettingsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/normalHomeLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/normal_home_label"
+                android:textColor="@color/lotus_ink"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/normalHomeValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/normal_home_not_selected"
+                android:textColor="@color/lotus_ink"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/selectNormalHomeButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:backgroundTint="@color/duck_egg_cyan_deep"
+                android:text="@string/select_normal_home"
+                android:textColor="@color/lotus_ink" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

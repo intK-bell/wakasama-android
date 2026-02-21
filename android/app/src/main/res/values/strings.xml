@@ -19,7 +19,14 @@
     <string name="home_setup_open_settings">設定する</string>
     <string name="home_setup_ignore">無視する</string>
     <string name="open_settings">おしたく</string>
-    <string name="settings_title">送信設定</string>
+    <string name="settings_title">設定</string>
+    <string name="section_question">質問</string>
+    <string name="question_content_label">質問内容</string>
+    <string name="section_send">送信</string>
+    <string name="section_kekkai">結界</string>
+    <string name="section_kekkai_reservation">予約</string>
+    <string name="section_kekkai_operation">操作</string>
+    <string name="section_save">保存</string>
     <string name="question_count_label">質問数</string>
     <string name="hint_mail_to">送信先メールアドレス</string>
     <string name="mail_delivery_note">メールが届かない場合は、メールアドレスを確認してください。</string>
@@ -31,6 +38,9 @@
     <string name="lock_mode_every_day">毎日</string>
     <string name="lock_time_label">ロック時刻</string>
     <string name="edit_lock_time">ロック時刻を変更</string>
+    <string name="advanced_settings_label">上級設定（オプション）</string>
+    <string name="show_advanced_settings">上級設定を表示</string>
+    <string name="hide_advanced_settings">上級設定を閉じる</string>
     <string name="normal_home_label">通常時に開くホーム</string>
     <string name="normal_home_not_selected">未選択（選択してください）</string>
     <string name="select_normal_home">通常ホームを選ぶ</string>

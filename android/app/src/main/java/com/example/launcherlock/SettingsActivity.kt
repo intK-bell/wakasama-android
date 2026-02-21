@@ -35,6 +35,7 @@ class SettingsActivity : AppCompatActivity() {
         private const val DEFAULT_WEEKDAY_CSV = "1,2,3,4,5"
         private const val DEFAULT_LOCK_HOUR = 14
         private const val DEFAULT_LOCK_MINUTE = 0
+        private const val ADVANCED_SETTINGS_OPEN_KEY = "advanced_settings_open"
     }
 
     private data class HomeCandidate(
@@ -69,6 +70,8 @@ class SettingsActivity : AppCompatActivity() {
         val lockModeSpinner = findViewById<Spinner>(R.id.lockModeSpinner)
         val lockTimeValue = findViewById<TextView>(R.id.lockTimeValue)
         val editLockTimeButton = findViewById<Button>(R.id.editLockTimeButton)
+        val advancedSettingsContainer = findViewById<LinearLayout>(R.id.advancedSettingsContainer)
+        val toggleAdvancedSettingsButton = findViewById<Button>(R.id.toggleAdvancedSettingsButton)
         val normalHomeValue = findViewById<TextView>(R.id.normalHomeValue)
         val selectNormalHomeButton = findViewById<Button>(R.id.selectNormalHomeButton)
         val resultText = findViewById<TextView>(R.id.settingsResultText)
@@ -92,6 +95,22 @@ class SettingsActivity : AppCompatActivity() {
                 selectedLockMinute,
                 true
             ).show()
+        }
+
+        var isAdvancedOpen = prefs.getBoolean(ADVANCED_SETTINGS_OPEN_KEY, false)
+        updateAdvancedSettingsVisibility(
+            isVisible = isAdvancedOpen,
+            container = advancedSettingsContainer,
+            toggleButton = toggleAdvancedSettingsButton
+        )
+        toggleAdvancedSettingsButton.setOnClickListener {
+            isAdvancedOpen = !isAdvancedOpen
+            prefs.edit { putBoolean(ADVANCED_SETTINGS_OPEN_KEY, isAdvancedOpen) }
+            updateAdvancedSettingsVisibility(
+                isVisible = isAdvancedOpen,
+                container = advancedSettingsContainer,
+                toggleButton = toggleAdvancedSettingsButton
+            )
         }
 
         val normalHomeCandidates = loadHomeCandidates()
@@ -398,6 +417,19 @@ class SettingsActivity : AppCompatActivity() {
         val visible = mode == LockDayMode.WEEKDAY
         label.visibility = if (visible) View.VISIBLE else View.GONE
         container.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+
+    private fun updateAdvancedSettingsVisibility(
+        isVisible: Boolean,
+        container: LinearLayout,
+        toggleButton: Button
+    ) {
+        container.visibility = if (isVisible) View.VISIBLE else View.GONE
+        toggleButton.text = if (isVisible) {
+            getString(R.string.hide_advanced_settings)
+        } else {
+            getString(R.string.show_advanced_settings)
+        }
     }
 
     private fun loadHomeCandidates(): List<HomeCandidate> {
