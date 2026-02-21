@@ -2,6 +2,7 @@ package com.example.launcherlock
 
 import android.content.Context
 import android.app.Activity
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -19,12 +20,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.example.launcherlock.model.LockDayMode
+import com.example.launcherlock.scheduler.LockScheduler
 import java.time.DayOfWeek
+import java.util.Locale
 
 class SettingsActivity : AppCompatActivity() {
     companion object {
         private const val MAX_QUESTIONS = 20
         private const val DEFAULT_WEEKDAY_CSV = "1,2,3,4,5"
+        private const val DEFAULT_LOCK_HOUR = 14
+        private const val DEFAULT_LOCK_MINUTE = 0
     }
 
     private val questionInputs = mutableListOf<EditText>()
@@ -44,11 +49,30 @@ class SettingsActivity : AppCompatActivity() {
         val weekdaySelectLabel = findViewById<TextView>(R.id.weekdaySelectLabel)
         val weekdayContainer = findViewById<LinearLayout>(R.id.weekdayContainer)
         val lockModeSpinner = findViewById<Spinner>(R.id.lockModeSpinner)
+        val lockTimeValue = findViewById<TextView>(R.id.lockTimeValue)
+        val editLockTimeButton = findViewById<Button>(R.id.editLockTimeButton)
         val resultText = findViewById<TextView>(R.id.settingsResultText)
         statusText = findViewById(R.id.statusText)
         toggleLockButton = findViewById(R.id.runLockCheckButton)
 
         mailToInput.setText(prefs.getString("mail_to", ""))
+        var selectedLockHour = prefs.getInt("lock_hour", DEFAULT_LOCK_HOUR).coerceIn(0, 23)
+        var selectedLockMinute = prefs.getInt("lock_minute", DEFAULT_LOCK_MINUTE).coerceIn(0, 59)
+        lockTimeValue.text = formatLockTime(selectedLockHour, selectedLockMinute)
+
+        editLockTimeButton.setOnClickListener {
+            TimePickerDialog(
+                this,
+                { _, hourOfDay, minute ->
+                    selectedLockHour = hourOfDay
+                    selectedLockMinute = minute
+                    lockTimeValue.text = formatLockTime(selectedLockHour, selectedLockMinute)
+                },
+                selectedLockHour,
+                selectedLockMinute,
+                true
+            ).show()
+        }
         val lockModeOptions = listOf(
             LockDayMode.WEEKDAY,
             LockDayMode.HOLIDAY,
@@ -151,6 +175,8 @@ class SettingsActivity : AppCompatActivity() {
                 putString("mail_to", mailTo)
                 putString("lock_mode", selectedLockMode.name)
                 putString("lock_weekdays", selectedWeekdays.joinToString(","))
+                putInt("lock_hour", selectedLockHour)
+                putInt("lock_minute", selectedLockMinute)
                 putInt("question_count", desiredCount)
                 questions.forEachIndexed { idx, q ->
                     putString("question_${idx + 1}", q)
@@ -161,6 +187,7 @@ class SettingsActivity : AppCompatActivity() {
             }
 
             resultText.text = getString(R.string.msg_settings_saved)
+            LockScheduler.schedule(applicationContext)
             setResult(Activity.RESULT_OK, Intent())
             finish()
         }
@@ -245,6 +272,10 @@ class SettingsActivity : AppCompatActivity() {
         } else {
             parsed
         }
+    }
+
+    private fun formatLockTime(hour: Int, minute: Int): String {
+        return String.format(Locale.JAPAN, "%02d:%02d", hour, minute)
     }
 
     private fun renderWeekdayChecks(

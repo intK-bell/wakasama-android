@@ -25,6 +25,8 @@
     <string name="lock_mode_weekday">曜日指定（下で選択）</string>
     <string name="lock_mode_holiday">土日祝</string>
     <string name="lock_mode_every_day">毎日</string>
+    <string name="lock_time_label">ロック時刻</string>
+    <string name="edit_lock_time">ロック時刻を変更</string>
     <string name="weekday_select_label">ロック曜日（曜日指定モード時）</string>
     <string name="weekday_mon">月</string>
     <string name="weekday_tue">火</string>

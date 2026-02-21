@@ -58,6 +58,8 @@ class MainActivity : AppCompatActivity() {
                 putString("question_1", getString(R.string.default_question_1))
                 putString("question_2", getString(R.string.default_question_2))
                 putString("lock_mode", "EVERY_DAY")
+                putInt("lock_hour", 14)
+                putInt("lock_minute", 0)
                 putBoolean("is_locked", false)
             }
         }

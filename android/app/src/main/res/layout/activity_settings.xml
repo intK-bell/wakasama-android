@@ -97,6 +97,33 @@
             android:visibility="gone"
             android:orientation="vertical" />
 
+        <TextView
+            android:id="@+id/lockTimeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/lock_time_label"
+            android:textColor="@color/lotus_ink"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lockTimeValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/lotus_ink"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/editLockTimeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:backgroundTint="@color/duck_egg_cyan_deep"
+            android:text="@string/edit_lock_time"
+            android:textColor="@color/lotus_ink" />
+
         <Button
             android:id="@+id/saveSettingsButton"
             android:layout_width="match_parent"
