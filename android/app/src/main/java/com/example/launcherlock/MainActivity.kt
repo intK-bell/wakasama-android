@@ -2,6 +2,9 @@ package com.example.launcherlock
 
 import android.content.Context
 import android.content.Intent
+import android.content.ActivityNotFoundException
+import android.content.ComponentName
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -19,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
+import com.example.launcherlock.lock.LockStateEvaluator
 import com.example.launcherlock.model.QuestionAnswer
 import com.example.launcherlock.network.NetworkModule
 import com.example.launcherlock.queue.AppDatabase
@@ -31,6 +35,13 @@ import kotlin.math.abs
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
+        private const val ENABLE_PINNED_MODE = false
+        private const val PREFS_NAME = LockStateEvaluator.PREFS_NAME
+        private const val IS_LOCKED_KEY = LockStateEvaluator.IS_LOCKED_KEY
+        private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
+        private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
+        private const val FORWARDING_TO_NORMAL_HOME_EXTRA = "forwarding_to_normal_home"
+        private const val HOME_SETUP_GUIDE_SHOWN_KEY = "home_setup_guide_shown_v1"
     }
 
     private data class QuestionRow(
@@ -47,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val prefs = getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         questionAnswerContainer = findViewById(R.id.questionAnswerContainer)
 
         if (!prefs.contains("api_base_url")) {
@@ -58,6 +69,7 @@ class MainActivity : AppCompatActivity() {
                 putString("question_1", getString(R.string.default_question_1))
                 putString("question_2", getString(R.string.default_question_2))
                 putString("lock_mode", "EVERY_DAY")
+                putString("lock_weekdays", "1,2,3,4,5")
                 putInt("lock_hour", 14)
                 putInt("lock_minute", 0)
                 putBoolean("is_locked", false)
@@ -65,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupOpenSettingsGuard()
+        maybeShowDefaultHomeSetupGuide()
 
         findViewById<View>(R.id.submitButton).setOnClickListener {
             val answers = questionRows.map {
@@ -111,12 +124,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
         applyConfiguredQuestions()
+        maybeForwardToNormalHome()
         updateLockTaskMode()
     }
 
     override fun onResume() {
         super.onResume()
         applyConfiguredQuestions()
+        maybeForwardToNormalHome()
+        updateLockTaskMode()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        maybeForwardToNormalHome()
         updateLockTaskMode()
     }
 
@@ -126,11 +148,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isLockedNow(): Boolean {
-        return getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
-            .getBoolean("is_locked", false)
+        return getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(IS_LOCKED_KEY, false)
     }
 
     private fun updateLockTaskMode() {
+        if (!ENABLE_PINNED_MODE) return
         if (isLockedNow()) {
             try {
                 startLockTask()
@@ -146,8 +169,83 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun maybeForwardToNormalHome() {
+        if (isLockedNow()) return
+        if (!isAppDefaultHome()) return
+        if (isExplicitLauncherLaunch()) return
+        if (intent.getBooleanExtra(FORWARDING_TO_NORMAL_HOME_EXTRA, false)) return
+
+        val target = discoverNormalHomeComponent() ?: return
+        if (target.packageName == packageName) return
+
+        val launch = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            component = target
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+            putExtra(FORWARDING_TO_NORMAL_HOME_EXTRA, true)
+        }
+        runCatching {
+            startActivity(launch)
+            finish()
+        }
+    }
+
+    private fun isExplicitLauncherLaunch(): Boolean {
+        val action = intent?.action ?: return false
+        val categories = intent?.categories ?: emptySet()
+        return action == Intent.ACTION_MAIN && categories.contains(Intent.CATEGORY_LAUNCHER)
+    }
+
+    private fun loadSavedNormalHomeComponent(): ComponentName? {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val pkg = prefs.getString(NORMAL_HOME_PACKAGE_KEY, null)?.trim().orEmpty()
+        val rawCls = prefs.getString(NORMAL_HOME_CLASS_KEY, null)?.trim().orEmpty()
+        if (pkg.isBlank() || rawCls.isBlank()) return null
+        val cls = if (rawCls.startsWith(".")) "$pkg$rawCls" else rawCls
+        if (pkg == packageName) return null
+        if (pkg == "com.android.settings") return null
+        if (cls.contains("FallbackHome")) return null
+        return ComponentName(pkg, cls)
+    }
+
+    private fun discoverNormalHomeComponent(): ComponentName? {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        val candidates = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+            .mapNotNull { resolveInfo ->
+                val info = resolveInfo.activityInfo ?: return@mapNotNull null
+                val pkg = info.packageName
+                val cls = if (info.name.startsWith(".")) "$pkg${info.name}" else info.name
+                if (pkg == packageName) return@mapNotNull null
+                if (pkg == "com.android.settings") return@mapNotNull null
+                if (cls.contains("FallbackHome")) return@mapNotNull null
+                ComponentName(pkg, cls)
+            }
+            .distinctBy { "${it.packageName}/${it.className}" }
+        val preferredOrder = listOf(
+            "com.google.android.apps.nexuslauncher",
+            "com.sec.android.app.launcher",
+            "com.miui.home",
+            "com.huawei.android.launcher",
+            "com.oppo.launcher",
+            "com.vivo.launcher",
+            "com.asus.launcher",
+            "com.teslacoilsw.launcher",
+            "ch.deletescape.lawnchair.plah",
+            "app.lawnchair"
+        )
+        val preferred = preferredOrder.firstNotNullOfOrNull { pkg ->
+            candidates.firstOrNull { it.packageName == pkg }
+        }
+        return preferred ?: candidates.firstOrNull()
+    }
+
+    @Suppress("unused")
+    private fun discoverAndSaveNormalHomeComponent(): ComponentName? = loadSavedNormalHomeComponent()
+
     private fun applyConfiguredQuestions() {
-        val prefs = getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val count = prefs.getInt("question_count", 2).coerceIn(1, 20)
         val questions = (1..count).map { index ->
             prefs.getString("question_$index", "")?.trim().orEmpty()
@@ -252,13 +350,50 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun maybeShowDefaultHomeSetupGuide() {
+        if (isAppDefaultHome()) return
+
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs.getBoolean(HOME_SETUP_GUIDE_SHOWN_KEY, false)) return
+
+        prefs.edit { putBoolean(HOME_SETUP_GUIDE_SHOWN_KEY, true) }
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.home_setup_dialog_title))
+            .setMessage(getString(R.string.home_setup_dialog_message))
+            .setPositiveButton(getString(R.string.home_setup_open_settings)) { _, _ ->
+                openHomeSettings()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun isAppDefaultHome(): Boolean {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        val resolved = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        val defaultPackage = resolved?.activityInfo?.packageName ?: return false
+        return defaultPackage == packageName
+    }
+
+    private fun openHomeSettings() {
+        val homeSettingsIntent = Intent(android.provider.Settings.ACTION_HOME_SETTINGS)
+        try {
+            startActivity(homeSettingsIntent)
+        } catch (_: ActivityNotFoundException) {
+            startActivity(Intent(android.provider.Settings.ACTION_SETTINGS))
+        }
+    }
+
     private fun showSuccessPopup(message: String) {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.popup_success_title))
             .setMessage(message)
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
-                    .edit { putBoolean("is_locked", false) }
+                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .edit {
+                        putBoolean(IS_LOCKED_KEY, false)
+                    }
                 updateLockTaskMode()
                 openHomeScreen()
             }

@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -19,6 +20,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.appcompat.app.AlertDialog
 import com.example.launcherlock.model.LockDayMode
 import com.example.launcherlock.scheduler.LockScheduler
 import java.time.DayOfWeek
@@ -27,9 +29,25 @@ import java.util.Locale
 class SettingsActivity : AppCompatActivity() {
     companion object {
         private const val MAX_QUESTIONS = 20
+        private const val PREFS_NAME = "launcher_lock"
+        private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
+        private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
         private const val DEFAULT_WEEKDAY_CSV = "1,2,3,4,5"
         private const val DEFAULT_LOCK_HOUR = 14
         private const val DEFAULT_LOCK_MINUTE = 0
+    }
+
+    private data class HomeCandidate(
+        val packageName: String,
+        val className: String,
+        val label: String
+    )
+
+    private fun isSelectableNormalHome(packageName: String, className: String): Boolean {
+        if (packageName == this.packageName) return false
+        if (packageName == "com.android.settings") return false
+        if (className.contains("FallbackHome")) return false
+        return true
     }
 
     private val questionInputs = mutableListOf<EditText>()
@@ -41,7 +59,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        val prefs = getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         val mailToInput = findViewById<EditText>(R.id.mailToInput)
         val questionCountSpinner = findViewById<Spinner>(R.id.questionCountSpinner)
@@ -51,6 +69,8 @@ class SettingsActivity : AppCompatActivity() {
         val lockModeSpinner = findViewById<Spinner>(R.id.lockModeSpinner)
         val lockTimeValue = findViewById<TextView>(R.id.lockTimeValue)
         val editLockTimeButton = findViewById<Button>(R.id.editLockTimeButton)
+        val normalHomeValue = findViewById<TextView>(R.id.normalHomeValue)
+        val selectNormalHomeButton = findViewById<Button>(R.id.selectNormalHomeButton)
         val resultText = findViewById<TextView>(R.id.settingsResultText)
         statusText = findViewById(R.id.statusText)
         toggleLockButton = findViewById(R.id.runLockCheckButton)
@@ -72,6 +92,38 @@ class SettingsActivity : AppCompatActivity() {
                 selectedLockMinute,
                 true
             ).show()
+        }
+
+        val normalHomeCandidates = loadHomeCandidates()
+        if (prefs.getString(NORMAL_HOME_PACKAGE_KEY, null).isNullOrBlank()) {
+            findCurrentDefaultHomeCandidate()?.let { candidate ->
+                if (candidate.packageName != packageName) {
+                    prefs.edit {
+                        putString(NORMAL_HOME_PACKAGE_KEY, candidate.packageName)
+                        putString(NORMAL_HOME_CLASS_KEY, candidate.className)
+                    }
+                }
+            }
+        }
+        updateNormalHomeValue(normalHomeValue, prefs, normalHomeCandidates)
+        selectNormalHomeButton.setOnClickListener {
+            if (normalHomeCandidates.isEmpty()) {
+                resultText.text = getString(R.string.msg_normal_home_not_found)
+                return@setOnClickListener
+            }
+            val labels = normalHomeCandidates.map { it.label }.toTypedArray()
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.select_normal_home))
+                .setItems(labels) { _, which ->
+                    val selected = normalHomeCandidates[which]
+                    prefs.edit {
+                        putString(NORMAL_HOME_PACKAGE_KEY, selected.packageName)
+                        putString(NORMAL_HOME_CLASS_KEY, selected.className)
+                    }
+                    updateNormalHomeValue(normalHomeValue, prefs, normalHomeCandidates)
+                    resultText.text = getString(R.string.msg_normal_home_saved)
+                }
+                .show()
         }
         val lockModeOptions = listOf(
             LockDayMode.WEEKDAY,
@@ -212,14 +264,16 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun isLockedNow(): Boolean {
-        return getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
+        return getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getBoolean("is_locked", false)
     }
 
     private fun toggleLockState() {
-        val prefs = getSharedPreferences("launcher_lock", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val current = prefs.getBoolean("is_locked", false)
-        prefs.edit { putBoolean("is_locked", !current) }
+        prefs.edit {
+            putBoolean("is_locked", !current)
+        }
     }
 
     private fun currentQuestionValues(): List<String> {
@@ -344,5 +398,63 @@ class SettingsActivity : AppCompatActivity() {
         val visible = mode == LockDayMode.WEEKDAY
         label.visibility = if (visible) View.VISIBLE else View.GONE
         container.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+
+    private fun loadHomeCandidates(): List<HomeCandidate> {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        return packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+            .mapNotNull { resolveInfo ->
+                val info = resolveInfo.activityInfo ?: return@mapNotNull null
+                val label = resolveInfo.loadLabel(packageManager)?.toString()
+                    ?: "${info.packageName}/${info.name}"
+                val normalizedClass = if (info.name.startsWith(".")) {
+                    "${info.packageName}${info.name}"
+                } else {
+                    info.name
+                }
+                if (!isSelectableNormalHome(info.packageName, normalizedClass)) return@mapNotNull null
+                HomeCandidate(
+                    packageName = info.packageName,
+                    className = normalizedClass,
+                    label = label
+                )
+            }
+            .distinctBy { "${it.packageName}/${it.className}" }
+            .sortedBy { it.label.lowercase(Locale.ROOT) }
+    }
+
+    private fun findCurrentDefaultHomeCandidate(): HomeCandidate? {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        val resolved = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            ?: return null
+        val info = resolved.activityInfo ?: return null
+        val label = resolved.loadLabel(packageManager)?.toString()
+            ?: "${info.packageName}/${info.name}"
+        val normalizedClass = if (info.name.startsWith(".")) {
+            "${info.packageName}${info.name}"
+        } else {
+            info.name
+        }
+        if (!isSelectableNormalHome(info.packageName, normalizedClass)) return null
+        return HomeCandidate(
+            packageName = info.packageName,
+            className = normalizedClass,
+            label = label
+        )
+    }
+
+    private fun updateNormalHomeValue(
+        textView: TextView,
+        prefs: android.content.SharedPreferences,
+        candidates: List<HomeCandidate>
+    ) {
+        val pkg = prefs.getString(NORMAL_HOME_PACKAGE_KEY, null)
+        val cls = prefs.getString(NORMAL_HOME_CLASS_KEY, null)
+        val selected = candidates.firstOrNull { it.packageName == pkg && it.className == cls }
+        textView.text = selected?.label ?: getString(R.string.normal_home_not_selected)
     }
 }

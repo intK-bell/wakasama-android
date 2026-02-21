@@ -14,6 +14,9 @@
     <string name="msg_queued">送信失敗。再送キューへ保存した</string>
     <string name="popup_error_message">おっと、ちょっと調子悪いみたい。ママ、パパに解除してもらって。</string>
     <string name="popup_success_title">よくがんばったね</string>
+    <string name="home_setup_dialog_title">ホーム設定のお願い</string>
+    <string name="home_setup_dialog_message">設定で「ランチャー」や「ホームアプリ」を検索して、「若様の宿題」を選択してください。</string>
+    <string name="home_setup_open_settings">設定を開く</string>
     <string name="open_settings">おしたく</string>
     <string name="settings_title">送信設定</string>
     <string name="question_count_label">質問数</string>
@@ -27,6 +30,11 @@
     <string name="lock_mode_every_day">毎日</string>
     <string name="lock_time_label">ロック時刻</string>
     <string name="edit_lock_time">ロック時刻を変更</string>
+    <string name="normal_home_label">通常時に開くホーム</string>
+    <string name="normal_home_not_selected">未選択（選択してください）</string>
+    <string name="select_normal_home">通常ホームを選ぶ</string>
+    <string name="msg_normal_home_saved">通常ホームを保存した</string>
+    <string name="msg_normal_home_not_found">通常ホーム候補が見つからない</string>
     <string name="weekday_select_label">ロック曜日（曜日指定モード時）</string>
     <string name="weekday_mon">月</string>
     <string name="weekday_tue">火</string>

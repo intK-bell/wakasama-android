@@ -124,6 +124,33 @@
             android:text="@string/edit_lock_time"
             android:textColor="@color/lotus_ink" />
 
+        <TextView
+            android:id="@+id/normalHomeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/normal_home_label"
+            android:textColor="@color/lotus_ink"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/normalHomeValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/normal_home_not_selected"
+            android:textColor="@color/lotus_ink"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/selectNormalHomeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:backgroundTint="@color/duck_egg_cyan_deep"
+            android:text="@string/select_normal_home"
+            android:textColor="@color/lotus_ink" />
+
         <Button
             android:id="@+id/saveSettingsButton"
             android:layout_width="match_parent"
