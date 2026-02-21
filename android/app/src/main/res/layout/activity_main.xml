@@ -33,12 +33,13 @@
 
     <ImageView
         android:id="@+id/retainerAvatar"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="85dp"
+        android:layout_height="85dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:contentDescription="@null"
         android:src="@drawable/avatar_retainer"
+        android:translationX="-28dp"
         app:layout_constraintStart_toStartOf="@id/headerBar"
         app:layout_constraintTop_toTopOf="@id/headerBar" />
 
@@ -46,8 +47,9 @@
         android:id="@+id/titleText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="0dp"
         android:layout_marginEnd="24dp"
+        android:translationX="-8dp"
         android:text="@string/main_title"
         android:textColor="@color/lotus_ink"
         android:textSize="18sp"
@@ -58,15 +60,37 @@
         app:layout_constraintTop_toTopOf="@id/retainerAvatar" />
 
     <!-- 3. 設定ボタン -->
-    <View
+    <FrameLayout
         android:id="@+id/openSettingsButton"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintBottom_toBottomOf="@id/retainerAvatar"
+        android:layout_width="132dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="8dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintEnd_toEndOf="@id/retainerAvatar"
         app:layout_constraintStart_toStartOf="@id/retainerAvatar"
-        app:layout_constraintTop_toTopOf="@id/retainerAvatar" />
+        app:layout_constraintTop_toBottomOf="@id/headerBar">
+
+        <ImageView
+            android:layout_width="122dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:contentDescription="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ui_setting_bar" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/open_settings"
+            android:textColor="@color/lotus_ink"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </FrameLayout>
 
     <!-- 5. 下パネル -->
     <ImageView
@@ -74,7 +98,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="-48dp"
+        android:layout_marginTop="-40dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:contentDescription="@null"
@@ -86,19 +110,23 @@
         app:layout_constraintTop_toBottomOf="@id/wakasama" />
 
     <!-- 4. 若様キャラ -->
+
+    <!-- 5.1. contentArea (スクロール対応) -->
     <ImageView
         android:id="@+id/wakasama"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="72dp"
+        android:layout_marginEnd="4dp"
         android:adjustViewBounds="true"
         android:contentDescription="@null"
         android:scaleType="fitCenter"
         android:src="@drawable/char_wakasama"
+        android:translationX="-18dp"
+        android:translationY="-18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerBar" />
 
-    <!-- 5.1. contentArea (スクロール対応) -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/contentArea"
         android:layout_width="0dp"

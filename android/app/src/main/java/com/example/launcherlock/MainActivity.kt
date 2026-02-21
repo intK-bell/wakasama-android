@@ -9,13 +9,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.InputType
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
-import android.view.ViewConfiguration
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -33,7 +29,6 @@ import com.example.launcherlock.repo.AnswerUnlockUseCase
 import com.example.launcherlock.repo.SubmissionRepository
 import com.example.launcherlock.security.DeviceSigningManager
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -55,8 +50,6 @@ class MainActivity : AppCompatActivity() {
     )
 
     private lateinit var questionAnswerContainer: LinearLayout
-    private val uiHandler = Handler(Looper.getMainLooper())
-    private var settingsLongPressTriggered = false
     private var skipNextForwardToNormalHome = false
     private val questionRows = mutableListOf<QuestionRow>()
 
@@ -176,11 +169,6 @@ class MainActivity : AppCompatActivity() {
             maybeForwardToNormalHome()
         }
         updateLockTaskMode()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        uiHandler.removeCallbacksAndMessages(null)
     }
 
     private fun isLockedNow(): Boolean {
@@ -331,45 +319,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupOpenSettingsGuard() {
         val button = findViewById<View>(R.id.openSettingsButton)
-        val touchSlop = ViewConfiguration.get(this).scaledTouchSlop
-        val openRunnable = Runnable {
-            settingsLongPressTriggered = true
+        button.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
-        }
-
-        var downX = 0f
-        var downY = 0f
-
-        button.setOnClickListener { }
-        button.setOnTouchListener { view: View, event: MotionEvent ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    settingsLongPressTriggered = false
-                    downX = event.x
-                    downY = event.y
-                    uiHandler.postDelayed(openRunnable, 2_000L)
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val moved = abs(event.x - downX) > touchSlop || abs(event.y - downY) > touchSlop
-                    if (moved) {
-                        uiHandler.removeCallbacks(openRunnable)
-                    }
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    uiHandler.removeCallbacks(openRunnable)
-                    if (!settingsLongPressTriggered) {
-                        view.performClick()
-                    }
-                    true
-                }
-                MotionEvent.ACTION_CANCEL -> {
-                    uiHandler.removeCallbacks(openRunnable)
-                    true
-                }
-                else -> false
-            }
         }
     }
 

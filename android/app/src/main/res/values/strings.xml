@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">若様の宿題</string>
-    <string name="main_title">若様、\n学問のほどをお聞かせくださりませ</string>
+    <string name="main_title">若様、\nお聞かせくださりませ</string>
     <string name="main_status_placeholder">結界：-</string>
     <string name="run_lock_check">結界を張る</string>
     <string name="lock_now">結界を張る</string>
