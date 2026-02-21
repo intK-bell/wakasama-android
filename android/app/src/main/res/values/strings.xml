@@ -14,9 +14,10 @@
     <string name="msg_queued">送信失敗。再送キューへ保存した</string>
     <string name="popup_error_message">おっと、ちょっと調子悪いみたい。ママ、パパに解除してもらって。</string>
     <string name="popup_success_title">よくがんばったね</string>
-    <string name="home_setup_dialog_title">ホーム設定のお願い</string>
-    <string name="home_setup_dialog_message">設定で「ランチャー」や「ホームアプリ」を検索して、「若様の宿題」を選択してください。</string>
-    <string name="home_setup_open_settings">設定を開く</string>
+    <string name="home_setup_dialog_title">ホームアプリ設定</string>
+    <string name="home_setup_dialog_message">若様の宿題をホームアプリに設定して使用してください。\n\n「設定する」を押すとホーム設定画面を開きます。\n開けない場合は、設定＞検索＞「ランチャーモード」を入力＞「若様の宿題」を選択してください。</string>
+    <string name="home_setup_open_settings">設定する</string>
+    <string name="home_setup_ignore">無視する</string>
     <string name="open_settings">おしたく</string>
     <string name="settings_title">送信設定</string>
     <string name="question_count_label">質問数</string>

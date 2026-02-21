@@ -41,7 +41,6 @@ class MainActivity : AppCompatActivity() {
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
         private const val FORWARDING_TO_NORMAL_HOME_EXTRA = "forwarding_to_normal_home"
-        private const val HOME_SETUP_GUIDE_SHOWN_KEY = "home_setup_guide_shown_v1"
     }
 
     private data class QuestionRow(
@@ -353,17 +352,16 @@ class MainActivity : AppCompatActivity() {
     private fun maybeShowDefaultHomeSetupGuide() {
         if (isAppDefaultHome()) return
 
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        if (prefs.getBoolean(HOME_SETUP_GUIDE_SHOWN_KEY, false)) return
-
-        prefs.edit { putBoolean(HOME_SETUP_GUIDE_SHOWN_KEY, true) }
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.home_setup_dialog_title))
             .setMessage(getString(R.string.home_setup_dialog_message))
             .setPositiveButton(getString(R.string.home_setup_open_settings)) { _, _ ->
                 openHomeSettings()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(getString(R.string.home_setup_ignore)) { _, _ ->
+                finishAffinity()
+            }
+            .setCancelable(false)
             .show()
     }
 
