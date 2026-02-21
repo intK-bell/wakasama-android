@@ -1,10 +1,12 @@
 package com.example.launcherlock
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.os.Build
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -19,6 +21,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
@@ -41,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
         private const val FORWARDING_TO_NORMAL_HOME_EXTRA = "forwarding_to_normal_home"
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 2001
     }
 
     private data class QuestionRow(
@@ -77,6 +81,7 @@ class MainActivity : AppCompatActivity() {
 
         setupOpenSettingsGuard()
         maybeShowDefaultHomeSetupGuide()
+        maybeRequestNotificationPermission()
 
         findViewById<View>(R.id.submitButton).setOnClickListener {
             val answers = questionRows.map {
@@ -347,6 +352,20 @@ class MainActivity : AppCompatActivity() {
             .setMessage(message)
             .setPositiveButton(android.R.string.ok, null)
             .show()
+    }
+
+    private fun maybeRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) return
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            NOTIFICATION_PERMISSION_REQUEST_CODE
+        )
     }
 
     private fun maybeShowDefaultHomeSetupGuide() {

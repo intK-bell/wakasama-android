@@ -10,6 +10,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.launcherlock.lock.LockAlertNotifier
 import com.example.launcherlock.worker.SubmissionRetryWorker
 import java.time.Duration
 import java.time.LocalTime
@@ -58,7 +59,10 @@ object LockScheduler {
     }
 
     fun onTimerAlarmFired(context: Context) {
-        com.example.launcherlock.lock.LockStateEvaluator.applyTimedLockIfNeeded(context)
+        val lockedNow = com.example.launcherlock.lock.LockStateEvaluator.applyTimedLockIfNeeded(context)
+        if (lockedNow) {
+            LockAlertNotifier.notifyTimerLockTriggered(context)
+        }
         schedule(context)
     }
 
