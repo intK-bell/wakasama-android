@@ -83,6 +83,10 @@ class MainActivity : AppCompatActivity() {
                     showErrorPopup(getString(R.string.msg_missing_mail_to))
                     return@launch
                 }
+                if (!EmailValidator.isValid(mailTo)) {
+                    showErrorPopup(getString(R.string.msg_invalid_mail_to))
+                    return@launch
+                }
 
                 val api = NetworkModule.createApi(applicationContext, baseUrl)
                 val dao = AppDatabase.getInstance(applicationContext).pendingSubmissionDao()

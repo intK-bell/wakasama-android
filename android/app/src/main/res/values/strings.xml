@@ -34,6 +34,7 @@
     <string name="weekday_sat">土</string>
     <string name="weekday_sun">日</string>
     <string name="msg_missing_mail_to">送信先メールアドレスを設定して</string>
+    <string name="msg_invalid_mail_to">メールアドレスの形式が正しくない</string>
     <string name="hint_question_n">質問%1$d</string>
     <string name="answer_hint_format">回答%1$d</string>
     <string name="question_label_format">質問%1$d: %2$s</string>

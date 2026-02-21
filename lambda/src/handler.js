@@ -199,7 +199,7 @@ export const handler = async (event) => {
   }
 
   try {
-    const subject = `[LauncherLock] Answers from ${payload.deviceId}`;
+    const subject = "若様よりご報告でござる";
     const textBody = buildMailText(payload);
     await sendAnswerMail({ subject, textBody, to: payload.to });
 

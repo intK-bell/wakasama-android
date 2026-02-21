@@ -112,6 +112,15 @@ class SettingsActivity : AppCompatActivity() {
             val desiredCount = questionCountOptions
                 .getOrElse(questionCountSpinner.selectedItemPosition) { savedCount }
 
+            if (mailTo.isBlank()) {
+                resultText.text = getString(R.string.msg_missing_mail_to)
+                return@setOnClickListener
+            }
+            if (!EmailValidator.isValid(mailTo)) {
+                resultText.text = getString(R.string.msg_invalid_mail_to)
+                return@setOnClickListener
+            }
+
             if (questionInputs.size != desiredCount) {
                 renderQuestionInputs(
                     container = questionsContainer,

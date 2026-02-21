@@ -18,6 +18,9 @@ export function validatePayload(payload) {
   if (typeof payload.to !== "string" || payload.to.trim() === "") {
     return "to is required";
   }
+  if (!isValidEmail(payload.to)) {
+    return "to is invalid";
+  }
 
   for (const item of payload.questions) {
     if (!item || typeof item !== "object") return "question item is invalid";
@@ -28,17 +31,23 @@ export function validatePayload(payload) {
   return null;
 }
 
+function isValidEmail(value) {
+  const email = String(value || "").trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export function buildMailText(payload) {
   const lines = [];
-  lines.push(`deviceId: ${payload.deviceId}`);
-  lines.push(`answeredAt: ${payload.answeredAt}`);
-  lines.push("");
-  lines.push("questions:");
-
   payload.questions.forEach((qa, idx) => {
-    lines.push(`${idx + 1}. Q: ${qa.q}`);
-    lines.push(`   A: ${qa.a}`);
+    lines.push(`質問${idx + 1}：${qa.q}`);
+    lines.push(`　回答：${qa.a}`);
   });
+
+  lines.push("");
+  lines.push("発信元");
+  lines.push("若様の宿題");
+  lines.push("support team");
+  lines.push("email：aokigyoumukikaku@gmail.com");
 
   return lines.join("\n");
 }

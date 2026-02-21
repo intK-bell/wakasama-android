@@ -48,8 +48,8 @@ android {
         minSdk = 26
         //noinspection EditedTargetSdkVersion
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.5"
+        versionCode = 8
+        versionName = "1.0.8"
         buildConfigField(
             "String",
             "APP_TOKEN",
