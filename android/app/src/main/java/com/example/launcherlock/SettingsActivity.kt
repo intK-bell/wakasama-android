@@ -71,7 +71,7 @@ class SettingsActivity : AppCompatActivity() {
         val lockTimeValue = findViewById<TextView>(R.id.lockTimeValue)
         val editLockTimeButton = findViewById<Button>(R.id.editLockTimeButton)
         val advancedSettingsContainer = findViewById<LinearLayout>(R.id.advancedSettingsContainer)
-        val toggleAdvancedSettingsButton = findViewById<Button>(R.id.toggleAdvancedSettingsButton)
+        val advancedSettingsToggleText = findViewById<TextView>(R.id.advancedSettingsToggleText)
         val normalHomeValue = findViewById<TextView>(R.id.normalHomeValue)
         val selectNormalHomeButton = findViewById<Button>(R.id.selectNormalHomeButton)
         val resultText = findViewById<TextView>(R.id.settingsResultText)
@@ -101,15 +101,15 @@ class SettingsActivity : AppCompatActivity() {
         updateAdvancedSettingsVisibility(
             isVisible = isAdvancedOpen,
             container = advancedSettingsContainer,
-            toggleButton = toggleAdvancedSettingsButton
+            toggleView = advancedSettingsToggleText
         )
-        toggleAdvancedSettingsButton.setOnClickListener {
+        advancedSettingsToggleText.setOnClickListener {
             isAdvancedOpen = !isAdvancedOpen
             prefs.edit { putBoolean(ADVANCED_SETTINGS_OPEN_KEY, isAdvancedOpen) }
             updateAdvancedSettingsVisibility(
                 isVisible = isAdvancedOpen,
                 container = advancedSettingsContainer,
-                toggleButton = toggleAdvancedSettingsButton
+                toggleView = advancedSettingsToggleText
             )
         }
 
@@ -422,13 +422,13 @@ class SettingsActivity : AppCompatActivity() {
     private fun updateAdvancedSettingsVisibility(
         isVisible: Boolean,
         container: LinearLayout,
-        toggleButton: Button
+        toggleView: TextView
     ) {
         container.visibility = if (isVisible) View.VISIBLE else View.GONE
-        toggleButton.text = if (isVisible) {
-            getString(R.string.hide_advanced_settings)
+        toggleView.text = if (isVisible) {
+            getString(R.string.advanced_settings_open)
         } else {
-            getString(R.string.show_advanced_settings)
+            getString(R.string.advanced_settings_closed)
         }
     }
 

@@ -174,7 +174,7 @@ class MainActivity : AppCompatActivity() {
         if (isExplicitLauncherLaunch()) return
         if (intent.getBooleanExtra(FORWARDING_TO_NORMAL_HOME_EXTRA, false)) return
 
-        val target = discoverNormalHomeComponent() ?: return
+        val target = loadSavedNormalHomeComponent() ?: discoverNormalHomeComponent() ?: return
         if (target.packageName == packageName) return
 
         val launch = Intent(Intent.ACTION_MAIN).apply {

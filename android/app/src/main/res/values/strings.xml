@@ -38,9 +38,8 @@
     <string name="lock_mode_every_day">毎日</string>
     <string name="lock_time_label">ロック時刻</string>
     <string name="edit_lock_time">ロック時刻を変更</string>
-    <string name="advanced_settings_label">上級設定（オプション）</string>
-    <string name="show_advanced_settings">上級設定を表示</string>
-    <string name="hide_advanced_settings">上級設定を閉じる</string>
+    <string name="advanced_settings_closed">上級設定（オプション） ▼</string>
+    <string name="advanced_settings_open">上級設定（オプション） ▲</string>
     <string name="normal_home_label">通常時に開くホーム</string>
     <string name="normal_home_not_selected">未選択（選択してください）</string>
     <string name="select_normal_home">通常ホームを選ぶ</string>
