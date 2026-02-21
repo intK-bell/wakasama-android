@@ -40,6 +40,8 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
         private const val ENABLE_PINNED_MODE = false
         private const val PREFS_NAME = LockStateEvaluator.PREFS_NAME
+        private const val HOME_SETUP_COMPLETED_KEY = "home_setup_completed"
+        private const val HOME_SETTINGS_IN_PROGRESS_KEY = "home_settings_in_progress"
         private const val IS_LOCKED_KEY = LockStateEvaluator.IS_LOCKED_KEY
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
@@ -55,6 +57,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var questionAnswerContainer: LinearLayout
     private val uiHandler = Handler(Looper.getMainLooper())
     private var settingsLongPressTriggered = false
+    private var skipNextForwardToNormalHome = false
     private val questionRows = mutableListOf<QuestionRow>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,11 +79,11 @@ class MainActivity : AppCompatActivity() {
                 putInt("lock_hour", 14)
                 putInt("lock_minute", 0)
                 putBoolean("is_locked", false)
+                putBoolean(HOME_SETUP_COMPLETED_KEY, false)
             }
         }
 
         setupOpenSettingsGuard()
-        maybeShowDefaultHomeSetupGuide()
         maybeRequestNotificationPermission()
 
         findViewById<View>(R.id.submitButton).setOnClickListener {
@@ -134,15 +137,44 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val homeSettingsInProgress = prefs.getBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
+
+        if (!isAppDefaultHome()) {
+            maybeShowDefaultHomeSetupGuide()
+            return
+        }
+
+        val setupCompleted = prefs.getBoolean(HOME_SETUP_COMPLETED_KEY, false)
+        val completedThisResume = !setupCompleted
+        skipNextForwardToNormalHome = completedThisResume || homeSettingsInProgress
+        if (!setupCompleted) {
+            prefs.edit {
+                putBoolean(HOME_SETUP_COMPLETED_KEY, true)
+            }
+        }
+        if (homeSettingsInProgress) {
+            prefs.edit {
+                putBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
+            }
+        }
+
         applyConfiguredQuestions()
-        maybeForwardToNormalHome()
+        if (!skipNextForwardToNormalHome) {
+            maybeForwardToNormalHome()
+        }
         updateLockTaskMode()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        maybeForwardToNormalHome()
+        if (skipNextForwardToNormalHome) {
+            skipNextForwardToNormalHome = false
+        } else {
+            maybeForwardToNormalHome()
+        }
         updateLockTaskMode()
     }
 
@@ -176,6 +208,10 @@ class MainActivity : AppCompatActivity() {
     private fun maybeForwardToNormalHome() {
         if (isLockedNow()) return
         if (!isAppDefaultHome()) return
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val setupCompleted = prefs.getBoolean(HOME_SETUP_COMPLETED_KEY, false)
+        if (!setupCompleted) return
+        if (prefs.getBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)) return
         if (isExplicitLauncherLaunch()) return
         if (intent.getBooleanExtra(FORWARDING_TO_NORMAL_HOME_EXTRA, false)) return
 
@@ -394,6 +430,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openHomeSettings() {
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+            putBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, true)
+        }
         val homeSettingsIntent = Intent(android.provider.Settings.ACTION_HOME_SETTINGS)
         try {
             startActivity(homeSettingsIntent)
