@@ -67,6 +67,7 @@ class SettingsActivity : AppCompatActivity() {
         val questionsContainer = findViewById<LinearLayout>(R.id.questionsContainer)
         val weekdaySelectLabel = findViewById<TextView>(R.id.weekdaySelectLabel)
         val weekdayContainer = findViewById<LinearLayout>(R.id.weekdayContainer)
+        val weekdayNoReservationNote = findViewById<TextView>(R.id.weekdayNoReservationNote)
         val lockModeSpinner = findViewById<Spinner>(R.id.lockModeSpinner)
         val lockTimeValue = findViewById<TextView>(R.id.lockTimeValue)
         val editLockTimeButton = findViewById<Button>(R.id.editLockTimeButton)
@@ -165,12 +166,12 @@ class SettingsActivity : AppCompatActivity() {
                 prefs.getString("lock_weekdays", DEFAULT_WEEKDAY_CSV) ?: DEFAULT_WEEKDAY_CSV
             )
         )
-        updateWeekdayVisibility(savedLockMode, weekdaySelectLabel, weekdayContainer)
+        updateWeekdayVisibility(savedLockMode, weekdaySelectLabel, weekdayContainer, weekdayNoReservationNote)
 
         lockModeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val selected = lockModeOptions.getOrElse(position) { LockDayMode.EVERY_DAY }
-                updateWeekdayVisibility(selected, weekdaySelectLabel, weekdayContainer)
+                updateWeekdayVisibility(selected, weekdaySelectLabel, weekdayContainer, weekdayNoReservationNote)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -237,11 +238,6 @@ class SettingsActivity : AppCompatActivity() {
                 resultText.text = getString(R.string.msg_settings_required)
                 return@setOnClickListener
             }
-            if (selectedLockMode == LockDayMode.WEEKDAY && selectedWeekdays.isEmpty()) {
-                resultText.text = getString(R.string.msg_weekday_required)
-                return@setOnClickListener
-            }
-
             prefs.edit {
                 putString("mail_to", mailTo)
                 putString("lock_mode", selectedLockMode.name)
@@ -330,6 +326,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun parseWeekdaysCsv(raw: String): Set<Int> {
+        if (raw.isBlank()) return emptySet()
         val parsed = raw.split(",")
             .mapNotNull { it.trim().toIntOrNull() }
             .filter { it in 1..7 }
@@ -412,11 +409,13 @@ class SettingsActivity : AppCompatActivity() {
     private fun updateWeekdayVisibility(
         mode: LockDayMode,
         label: TextView,
-        container: LinearLayout
+        container: LinearLayout,
+        note: TextView
     ) {
         val visible = mode == LockDayMode.WEEKDAY
         label.visibility = if (visible) View.VISIBLE else View.GONE
         container.visibility = if (visible) View.VISIBLE else View.GONE
+        note.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
     private fun updateAdvancedSettingsVisibility(

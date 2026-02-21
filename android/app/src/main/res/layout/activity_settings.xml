@@ -146,6 +146,16 @@
             android:orientation="vertical" />
 
         <TextView
+            android:id="@+id/weekdayNoReservationNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/weekday_no_reservation_note"
+            android:textColor="@color/duck_egg_cyan_deep"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/lockTimeLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -55,6 +55,7 @@ object LockStateEvaluator {
     }
 
     private fun parseWeekdays(raw: String): Set<Int> {
+        if (raw.isBlank()) return emptySet()
         val parsed = raw.split(",")
             .mapNotNull { it.trim().toIntOrNull() }
             .filter { it in 1..7 }
