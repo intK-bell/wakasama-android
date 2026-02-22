@@ -31,6 +31,7 @@ class SettingsActivity : AppCompatActivity() {
         private const val MAX_QUESTIONS = 20
         private const val PREFS_NAME = "launcher_lock"
         private const val SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY = "skip_forward_to_normal_home_once"
+        private const val RETURN_TO_MAIN_AFTER_SAVE_ONCE_KEY = "return_to_main_after_save_once"
         private const val HOME_SETTINGS_IN_PROGRESS_KEY = "home_settings_in_progress"
         private const val HOME_SETTINGS_REQUESTED_AT_KEY = "home_settings_requested_at"
         private const val HOME_SETTINGS_EXPECT_DEFAULT_HOME_KEY = "home_settings_expect_default_home"
@@ -249,6 +250,7 @@ class SettingsActivity : AppCompatActivity() {
             LockScheduler.schedule(applicationContext)
             prefs.edit {
                 putBoolean(SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY, true)
+                putBoolean(RETURN_TO_MAIN_AFTER_SAVE_ONCE_KEY, true)
                 putBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
                 remove(HOME_SETTINGS_REQUESTED_AT_KEY)
                 remove(HOME_SETTINGS_EXPECT_DEFAULT_HOME_KEY)

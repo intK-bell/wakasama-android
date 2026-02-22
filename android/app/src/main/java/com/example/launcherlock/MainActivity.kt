@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         private const val HOME_SETTINGS_EXPECT_DEFAULT_HOME_KEY = "home_settings_expect_default_home"
         private const val HOME_SETTINGS_RETURN_TIMEOUT_MS = 15 * 60 * 1000L
         private const val SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY = "skip_forward_to_normal_home_once"
+        private const val RETURN_TO_MAIN_AFTER_SAVE_ONCE_KEY = "return_to_main_after_save_once"
         private const val IS_LOCKED_KEY = LockStateEvaluator.IS_LOCKED_KEY
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
@@ -68,7 +69,9 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         questionAnswerContainer = findViewById(R.id.questionAnswerContainer)
-        suppressNextAutoForwardToNormalHome = consumeSkipForwardToNormalHomeOnce(prefs)
+        val returnToMainAfterSave = consumeReturnToMainAfterSaveOnce(prefs)
+        suppressNextAutoForwardToNormalHome =
+            consumeSkipForwardToNormalHomeOnce(prefs) || returnToMainAfterSave
 
         if (!prefs.contains("api_base_url")) {
             prefs.edit {
@@ -143,6 +146,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val returnToMainAfterSave = consumeReturnToMainAfterSaveOnce(prefs)
         val skipForwardBySave = consumeSkipForwardToNormalHomeOnce(prefs)
         val launchSource = detectLaunchSource(intent)
 
@@ -157,10 +161,10 @@ class MainActivity : AppCompatActivity() {
             shouldOpenSettingsAfterHomeSetup && launchSource != LaunchSource.LAUNCHER
         Log.i(
             TAG,
-            "onResume: default home, launchSource=$launchSource, shouldOpenSettingsAfterHomeSetup=$shouldOpenSettingsAfterHomeSetup, shouldAutoOpenSettings=$shouldAutoOpenSettings, skipForwardBySave=$skipForwardBySave"
+            "onResume: default home, launchSource=$launchSource, shouldOpenSettingsAfterHomeSetup=$shouldOpenSettingsAfterHomeSetup, shouldAutoOpenSettings=$shouldAutoOpenSettings, returnToMainAfterSave=$returnToMainAfterSave, skipForwardBySave=$skipForwardBySave"
         )
         suppressNextAutoForwardToNormalHome =
-            shouldAutoOpenSettings || skipForwardBySave
+            shouldAutoOpenSettings || returnToMainAfterSave || skipForwardBySave
         if (shouldAutoOpenSettings) {
             Log.i(TAG, "onResume: opening SettingsActivity after home setup return")
             startActivity(Intent(this, SettingsActivity::class.java))
@@ -184,6 +188,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return shouldSkip
+    }
+
+    private fun consumeReturnToMainAfterSaveOnce(
+        prefs: android.content.SharedPreferences
+    ): Boolean {
+        val shouldReturnToMain = prefs.getBoolean(RETURN_TO_MAIN_AFTER_SAVE_ONCE_KEY, false)
+        if (shouldReturnToMain) {
+            prefs.edit {
+                putBoolean(RETURN_TO_MAIN_AFTER_SAVE_ONCE_KEY, false)
+            }
+        }
+        return shouldReturnToMain
     }
 
     private fun consumeHomeSettingsReturnOnce(
@@ -213,6 +229,10 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (consumeReturnToMainAfterSaveOnce(prefs)) {
+            suppressNextAutoForwardToNormalHome = true
+        }
         val shouldSuppressForward = consumeAutoForwardSuppressionIfNeeded()
         if (!shouldSuppressForward) {
             maybeForwardToNormalHome(intent)
