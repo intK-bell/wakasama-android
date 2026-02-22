@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         private const val PREFS_NAME = LockStateEvaluator.PREFS_NAME
         private const val HOME_SETUP_COMPLETED_KEY = "home_setup_completed"
         private const val HOME_SETTINGS_IN_PROGRESS_KEY = "home_settings_in_progress"
+        private const val SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY = "skip_forward_to_normal_home_once"
         private const val IS_LOCKED_KEY = LockStateEvaluator.IS_LOCKED_KEY
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         questionAnswerContainer = findViewById(R.id.questionAnswerContainer)
+        skipNextForwardToNormalHome = consumeSkipForwardToNormalHomeOnce(prefs)
 
         if (!prefs.contains("api_base_url")) {
             prefs.edit {
@@ -124,7 +126,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         applyConfiguredQuestions()
-        maybeForwardToNormalHome()
+        if (!skipNextForwardToNormalHome) {
+            maybeForwardToNormalHome()
+        }
         updateLockTaskMode()
     }
 
@@ -133,6 +137,7 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val homeSettingsInProgress = prefs.getBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
+        val skipForwardBySave = consumeSkipForwardToNormalHomeOnce(prefs)
 
         if (!isAppDefaultHome()) {
             maybeShowDefaultHomeSetupGuide()
@@ -141,7 +146,7 @@ class MainActivity : AppCompatActivity() {
 
         val setupCompleted = prefs.getBoolean(HOME_SETUP_COMPLETED_KEY, false)
         val completedThisResume = !setupCompleted
-        skipNextForwardToNormalHome = completedThisResume || homeSettingsInProgress
+        skipNextForwardToNormalHome = completedThisResume || homeSettingsInProgress || skipForwardBySave
         if (!setupCompleted) {
             prefs.edit {
                 putBoolean(HOME_SETUP_COMPLETED_KEY, true)
@@ -158,6 +163,18 @@ class MainActivity : AppCompatActivity() {
             maybeForwardToNormalHome()
         }
         updateLockTaskMode()
+    }
+
+    private fun consumeSkipForwardToNormalHomeOnce(
+        prefs: android.content.SharedPreferences
+    ): Boolean {
+        val shouldSkip = prefs.getBoolean(SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY, false)
+        if (shouldSkip) {
+            prefs.edit {
+                putBoolean(SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY, false)
+            }
+        }
+        return shouldSkip
     }
 
     override fun onNewIntent(intent: Intent) {

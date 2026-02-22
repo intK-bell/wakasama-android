@@ -30,6 +30,7 @@ class SettingsActivity : AppCompatActivity() {
     companion object {
         private const val MAX_QUESTIONS = 20
         private const val PREFS_NAME = "launcher_lock"
+        private const val SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY = "skip_forward_to_normal_home_once"
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
         private const val DEFAULT_WEEKDAY_CSV = "1,2,3,4,5"
@@ -255,6 +256,9 @@ class SettingsActivity : AppCompatActivity() {
 
             resultText.text = getString(R.string.msg_settings_saved)
             LockScheduler.schedule(applicationContext)
+            prefs.edit {
+                putBoolean(SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY, true)
+            }
             setResult(Activity.RESULT_OK, Intent())
             finish()
         }
