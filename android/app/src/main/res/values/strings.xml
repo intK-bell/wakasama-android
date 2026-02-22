@@ -6,6 +6,7 @@
     <string name="lock_now">結界を張る</string>
     <string name="unlock_now">結界を解く</string>
     <string name="submit_and_unlock">かくかくしかじかじゃ</string>
+    <string name="submit_and_unlock_submitting">家臣に申し付け中…</string>
     <string name="current_state">結界：%1$s</string>
     <string name="locked">張られている</string>
     <string name="unlocked">解けている</string>

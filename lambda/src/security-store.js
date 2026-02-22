@@ -24,6 +24,10 @@ function noncePk(deviceId) {
   return `NONCE#${deviceId}`;
 }
 
+function idempotencyPk(deviceId) {
+  return `IDEMPOTENCY#${deviceId}`;
+}
+
 export async function upsertDevicePublicKey(deviceId, publicKeyPem, keyAlgorithm = "ECDSA_P256_SHA256") {
   const now = Date.now();
   await ddb.send(
@@ -62,6 +66,29 @@ export async function reserveNonce(deviceId, nonce, ttlSeconds) {
         Item: {
           pk: noncePk(deviceId),
           sk: nonce,
+          deviceId,
+          expiresAt: ttlSeconds
+        },
+        ConditionExpression: "attribute_not_exists(pk) AND attribute_not_exists(sk)"
+      })
+    );
+    return true;
+  } catch (e) {
+    if (e?.name === "ConditionalCheckFailedException") {
+      return false;
+    }
+    throw e;
+  }
+}
+
+export async function reserveIdempotencyKey(deviceId, idempotencyKey, ttlSeconds) {
+  try {
+    await ddb.send(
+      new PutCommand({
+        TableName: tableName,
+        Item: {
+          pk: idempotencyPk(deviceId),
+          sk: idempotencyKey,
           deviceId,
           expiresAt: ttlSeconds
         },

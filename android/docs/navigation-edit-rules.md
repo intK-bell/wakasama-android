@@ -16,7 +16,7 @@
   を state map に追記する。
 
 ## Rule 3: 遷移起点は最小化
-- `MainActivity` の遷移判定は `onResume` / `onNewIntent` のみで扱う。
+- `MainActivity` の遷移判定は `onCreate` / `onResume` / `onNewIntent` で同一優先順を維持する。
 - `SettingsActivity` は「保存完了時の戻し」に限定する。
 
 ## Rule 4: HOMEとLAUNCHERを分離
@@ -34,11 +34,20 @@
   3. 結界ONでHOME押下時に通常ホームへ行かない
   4. 結界OFFでHOME押下時に通常ホームへ行く
   5. 御支度保存直後は、起動元に関係なく `MainActivity` が1回表示される（`return_to_main_after_save_once`）
+  6. 画面オフ中アラーム後、通知未タップの初回解除だけ追加判定が1回実行される（`pending_unlock_decision_once`）
+  7. 通知タップ起動は既存導線を優先し、追加判定を通らない
 
 ## Rule 7: docs同時更新
 - 遷移ロジック変更時は、同一コミットで以下を更新する:
   - `android/docs/navigation-state-map.md`
   - `android/docs/navigation-edit-rules.md`
+  - `android/docs/task-unlock-first-home-decision.md`
+
+## Rule 9: 通知タップと未タップを混在させない
+- 通知タップ経路は既存挙動を優先する（追加判定の対象外）。
+- 通知未タップ経路だけ `pending_unlock_decision_once` を消費する。
+- 1回判定フラグの消費箇所は1か所に固定する。
+- 背景Broadcast（例: `ACTION_USER_PRESENT`）を判定トリガーにしない。判定は `MainActivity` のライフサイクルで完結させる。
 
 ## Rule 8: `lookup` の固定手順
 - `lookup` は以下をまとめて実施する作業名とする。

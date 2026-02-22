@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.core.content.edit
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
@@ -30,6 +31,7 @@ object LockScheduler {
     private const val LEGACY_PERIODIC_LOCK_CHECK_WORK = "lock_check_daily"
     private const val LEGACY_ONE_SHOT_LOCK_CHECK_WORK = "lock_check_daily_once"
     private const val RETRY_WORK = "submission_retry"
+    private const val PENDING_UNLOCK_DECISION_ONCE_KEY = "pending_unlock_decision_once"
     private val JST_ZONE: ZoneId = ZoneId.of("Asia/Tokyo")
 
     fun schedule(context: Context) {
@@ -61,9 +63,17 @@ object LockScheduler {
     fun onTimerAlarmFired(context: Context) {
         val lockedNow = com.example.launcherlock.lock.LockStateEvaluator.applyTimedLockIfNeeded(context)
         if (lockedNow) {
+            markPendingUnlockDecisionIfScreenOff(context)
             LockAlertNotifier.notifyTimerLockTriggered(context)
         }
         schedule(context)
+    }
+
+    private fun markPendingUnlockDecisionIfScreenOff(context: Context) {
+        // Device/OEM differences around wakeup alarms can make screen-off detection unreliable at receive time.
+        // Keep the decision token whenever timer lock is newly applied; notification-tap path will clear it.
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit { putBoolean(PENDING_UNLOCK_DECISION_ONCE_KEY, true) }
     }
 
     private fun timerLockPendingIntent(context: Context): PendingIntent {

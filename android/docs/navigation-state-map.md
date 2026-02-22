@@ -13,6 +13,7 @@
 - `is_locked`: `true` なら通常ホームへ転送しない
 - `skip_forward_to_normal_home_once`: 御支度保存直後に、起動元（HOME/LAUNCHER/OTHER）に関係なく1回だけ自動転送を抑止
 - `return_to_main_after_save_once`: 御支度保存直後に、必ず1回だけMain表示を優先する
+- `pending_unlock_decision_once`: 画面オフ中アラーム発火後、通知未タップ時の初回ロック解除判定を1回だけ有効化する
 - `home_settings_in_progress`: アプリからホーム設定へ遷移中フラグ
 - `home_settings_requested_at`: ホーム設定遷移開始時刻
 - `home_settings_expect_default_home`: 既定ホーム切替を期待するか
@@ -29,11 +30,25 @@
 - 注意:
   - このフラグは「保存直後のMain維持」専用。通常のHOME挙動制御は `is_locked` と `maybeForwardToNormalHome` が担う。
 
+## Flag Lifecycle: `pending_unlock_decision_once`
+- 目的:
+  - タイマーで結界が新規適用されたとき、通知未タップ経路で初回解除判定を行う。
+- セット:
+  - `LockScheduler.onTimerAlarmFired` で結界ONが新規適用された直後に `true` を保存する。
+- 消費:
+  - `MainActivity.applyPendingUnlockDecisionIfNeeded` で通知未タップ経路に入ったとき、1回だけ消費して `false` に戻す。
+  - 消費ターンでは `is_locked` を使って遷移先を確定する（結界ON: 若様維持、結界OFF: 通常ホーム）。
+- クリア:
+  - 通知タップ起動（通知Intentのextra判定）時は、既存導線を優先するためこのフラグを即時 `false` に戻す。
+- 補足:
+  - `ACTION_USER_PRESENT` などの背景Broadcast受信には依存しない（端末/OEM差異で受信制限があるため）。
+
 ## Main Flow
 1. LAUNCHER起動で `MainActivity` が開く
 2. 既定ホームが若様でない場合は「ホームアプリ設定」ダイアログ表示
 3. 御支度保存後は `MainActivity` を前面化し、1回だけ自動転送抑止
-4. HOME起動時は、`is_locked=false` なら通常ホームへ転送、`is_locked=true` なら転送しない
+4. 画面オフ中アラーム後かつ通知未タップなら、初回解除判定を最優先で1回実行
+5. 上記以外のHOME起動時は、`is_locked=false` なら通常ホームへ転送、`is_locked=true` なら転送しない
 
 ## Dialog Flow (ホームアプリ設定)
 - `設定する`:
@@ -59,6 +74,12 @@
 1. 御支度で保存する（結界ON/OFFどちらでも）
 2. 保存直後は必ず `MainActivity` が前面になる
 3. その次のHOME押下で、`is_locked=true` ならMain維持、`is_locked=false` なら通常ホームへ遷移
+
+## Verification Focus (通知未タップの初回解除)
+1. 画面オフ中アラーム発火後、通知をタップしないまま解除した初回だけ分岐する
+2. 結界ONなら若様維持、結界OFFなら通常ホームへ遷移する
+3. 判定消費後は既存ホーム遷移ルールへ復帰する
+4. 通知タップ起動時は新規判定を使わず既存導線を優先する
 
 ## Guard Conditions of `maybeForwardToNormalHome`
 通常ホームへ転送しない条件:

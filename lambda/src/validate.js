@@ -10,6 +10,12 @@ export function validatePayload(payload) {
   if (typeof payload.answeredAt !== "string" || payload.answeredAt.trim() === "") {
     return "answeredAt is required";
   }
+  if (
+    payload.idempotencyKey !== undefined &&
+    (typeof payload.idempotencyKey !== "string" || payload.idempotencyKey.trim() === "")
+  ) {
+    return "idempotencyKey is invalid";
+  }
 
   if (!Array.isArray(payload.questions) || payload.questions.length === 0) {
     return "questions must be a non-empty array";

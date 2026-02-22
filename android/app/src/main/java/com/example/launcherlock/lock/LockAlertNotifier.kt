@@ -15,6 +15,7 @@ object LockAlertNotifier {
     private const val CHANNEL_ID = "lock_alerts"
     private const val CHANNEL_NAME = "結界通知"
     private const val NOTIFICATION_ID = 10_101
+    const val EXTRA_FROM_TIMER_LOCK_NOTIFICATION = "from_timer_lock_notification"
 
     fun notifyTimerLockTriggered(context: Context) {
         createChannelIfNeeded(context)
@@ -23,6 +24,7 @@ object LockAlertNotifier {
             action = Intent.ACTION_MAIN
             addCategory(Intent.CATEGORY_LAUNCHER)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_FROM_TIMER_LOCK_NOTIFICATION, true)
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -58,4 +60,3 @@ object LockAlertNotifier {
         manager.createNotificationChannel(channel)
     }
 }
-

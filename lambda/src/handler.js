@@ -1,7 +1,12 @@
 import "./env.js";
 import { sendAnswerMail } from "./mailer.js";
 import { buildMailText, validatePayload } from "./validate.js";
-import { getDevicePublicKey, reserveNonce, upsertDevicePublicKey } from "./security-store.js";
+import {
+  getDevicePublicKey,
+  reserveIdempotencyKey,
+  reserveNonce,
+  upsertDevicePublicKey
+} from "./security-store.js";
 import { buildCanonical, validateSignatureHeaders, verifySignature } from "./signature-auth.js";
 
 function response(statusCode, body) {
@@ -196,6 +201,19 @@ export const handler = async (event) => {
   const err = validatePayload(payload);
   if (err) {
     return response(400, { ok: false, message: err });
+  }
+
+  const idempotencyKey = String(payload.idempotencyKey || "").trim();
+  if (idempotencyKey) {
+    const ttlSeconds = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
+    const isFirstRequest = await reserveIdempotencyKey(
+      signatureAuth.deviceId,
+      idempotencyKey,
+      ttlSeconds
+    );
+    if (!isFirstRequest) {
+      return response(200, { ok: true, message: "duplicate ignored", deduplicated: true });
+    }
   }
 
   try {

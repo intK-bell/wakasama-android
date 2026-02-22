@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
+import com.example.launcherlock.lock.LockAlertNotifier
 import com.example.launcherlock.lock.LockStateEvaluator
 import com.example.launcherlock.model.QuestionAnswer
 import com.example.launcherlock.network.NetworkModule
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         private const val SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY = "skip_forward_to_normal_home_once"
         private const val RETURN_TO_MAIN_AFTER_SAVE_ONCE_KEY = "return_to_main_after_save_once"
         private const val IS_LOCKED_KEY = LockStateEvaluator.IS_LOCKED_KEY
+        private const val PENDING_UNLOCK_DECISION_ONCE_KEY = "pending_unlock_decision_once"
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
         private const val FORWARDING_TO_NORMAL_HOME_EXTRA = "forwarding_to_normal_home"
@@ -60,6 +62,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var questionAnswerContainer: LinearLayout
+    private lateinit var submitButton: View
+    private lateinit var submitButtonLabel: TextView
+    private var isSubmitting = false
     private var suppressNextAutoForwardToNormalHome = false
     private val questionRows = mutableListOf<QuestionRow>()
 
@@ -69,9 +74,8 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         questionAnswerContainer = findViewById(R.id.questionAnswerContainer)
-        val returnToMainAfterSave = consumeReturnToMainAfterSaveOnce(prefs)
-        suppressNextAutoForwardToNormalHome =
-            consumeSkipForwardToNormalHomeOnce(prefs) || returnToMainAfterSave
+        submitButton = findViewById(R.id.submitButton)
+        submitButtonLabel = findViewById(R.id.submitButtonLabel)
 
         if (!prefs.contains("api_base_url")) {
             prefs.edit {
@@ -91,52 +95,72 @@ class MainActivity : AppCompatActivity() {
         setupOpenSettingsGuard()
         maybeRequestNotificationPermission()
 
-        findViewById<View>(R.id.submitButton).setOnClickListener {
+        submitButton.setOnClickListener {
+            if (isSubmitting) return@setOnClickListener
+
             val answers = questionRows.map {
                 QuestionAnswer(q = it.question, a = it.answerInput.text.toString())
             }.filter { it.q.isNotBlank() || it.a.isNotBlank() }
 
             lifecycleScope.launch {
-                val baseUrl = prefs.getString("api_base_url", "") ?: ""
-                val signingManager = DeviceSigningManager(applicationContext)
-                val appToken = signingManager.appToken()
+                isSubmitting = true
+                setSubmitButtonSubmitting(submitting = true)
+                try {
+                    val baseUrl = prefs.getString("api_base_url", "") ?: ""
+                    val signingManager = DeviceSigningManager(applicationContext)
+                    val appToken = signingManager.appToken()
 
-                if (baseUrl.isBlank() || appToken.isBlank()) {
-                    showErrorPopup(getString(R.string.msg_missing_config))
-                    return@launch
-                }
-                val mailTo = prefs.getString("mail_to", null)?.trim().orEmpty()
-                if (mailTo.isBlank()) {
-                    showErrorPopup(getString(R.string.msg_missing_mail_to))
-                    return@launch
-                }
-                if (!EmailValidator.isValid(mailTo)) {
-                    showErrorPopup(getString(R.string.msg_invalid_mail_to))
-                    return@launch
-                }
+                    if (baseUrl.isBlank() || appToken.isBlank()) {
+                        showErrorPopup(getString(R.string.msg_missing_config))
+                        return@launch
+                    }
+                    val mailTo = prefs.getString("mail_to", null)?.trim().orEmpty()
+                    if (mailTo.isBlank()) {
+                        showErrorPopup(getString(R.string.msg_missing_mail_to))
+                        return@launch
+                    }
+                    if (!EmailValidator.isValid(mailTo)) {
+                        showErrorPopup(getString(R.string.msg_invalid_mail_to))
+                        return@launch
+                    }
 
-                val api = NetworkModule.createApi(applicationContext, baseUrl)
-                val dao = AppDatabase.getInstance(applicationContext).pendingSubmissionDao()
-                val repo = SubmissionRepository(api, dao, signingManager)
-                val useCase = AnswerUnlockUseCase(repo)
-                val deviceId = signingManager.deviceId()
+                    val api = NetworkModule.createApi(applicationContext, baseUrl)
+                    val dao = AppDatabase.getInstance(applicationContext).pendingSubmissionDao()
+                    val repo = SubmissionRepository(api, dao, signingManager)
+                    val useCase = AnswerUnlockUseCase(repo)
+                    val deviceId = signingManager.deviceId()
 
-                val success = useCase.submitAnswersAndUnlock(
-                    deviceId = deviceId,
-                    to = mailTo,
-                    answers = answers
-                )
+                    val success = useCase.submitAnswersAndUnlock(
+                        deviceId = deviceId,
+                        to = mailTo,
+                        answers = answers
+                    )
 
-                if (success) {
-                    val message = resources.getStringArray(R.array.unlock_success_messages).random()
-                    showSuccessPopup(message)
-                } else {
-                    showErrorPopup(getString(R.string.msg_queued))
+                    if (success) {
+                        val message = resources.getStringArray(R.array.unlock_success_messages).random()
+                        showSuccessPopup(message)
+                    } else {
+                        showErrorPopup(getString(R.string.msg_queued))
+                    }
+                } finally {
+                    isSubmitting = false
+                    setSubmitButtonSubmitting(submitting = false)
                 }
             }
         }
+        val handledByPendingUnlockDecision = applyPendingUnlockDecisionIfNeeded(intent)
+        val returnToMainAfterSave = if (handledByPendingUnlockDecision) {
+            false
+        } else {
+            consumeReturnToMainAfterSaveOnce(prefs)
+        }
+        suppressNextAutoForwardToNormalHome = if (handledByPendingUnlockDecision) {
+            false
+        } else {
+            consumeSkipForwardToNormalHomeOnce(prefs) || returnToMainAfterSave
+        }
         applyConfiguredQuestions()
-        if (!suppressNextAutoForwardToNormalHome) {
+        if (!handledByPendingUnlockDecision && !suppressNextAutoForwardToNormalHome) {
             maybeForwardToNormalHome(intent)
         }
         updateLockTaskMode()
@@ -146,8 +170,17 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val returnToMainAfterSave = consumeReturnToMainAfterSaveOnce(prefs)
-        val skipForwardBySave = consumeSkipForwardToNormalHomeOnce(prefs)
+        val handledByPendingUnlockDecision = applyPendingUnlockDecisionIfNeeded(intent)
+        val returnToMainAfterSave = if (handledByPendingUnlockDecision) {
+            false
+        } else {
+            consumeReturnToMainAfterSaveOnce(prefs)
+        }
+        val skipForwardBySave = if (handledByPendingUnlockDecision) {
+            false
+        } else {
+            consumeSkipForwardToNormalHomeOnce(prefs)
+        }
         val launchSource = detectLaunchSource(intent)
 
         if (!isAppDefaultHome()) {
@@ -172,7 +205,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         applyConfiguredQuestions()
-        if (!suppressNextAutoForwardToNormalHome) {
+        if (!handledByPendingUnlockDecision && !suppressNextAutoForwardToNormalHome) {
             maybeForwardToNormalHome(intent)
         }
         updateLockTaskMode()
@@ -229,6 +262,10 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        if (applyPendingUnlockDecisionIfNeeded(intent)) {
+            updateLockTaskMode()
+            return
+        }
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         if (consumeReturnToMainAfterSaveOnce(prefs)) {
             suppressNextAutoForwardToNormalHome = true
@@ -271,6 +308,11 @@ class MainActivity : AppCompatActivity() {
         if (launchSource == LaunchSource.LAUNCHER) return
         if (launchIntent?.getBooleanExtra(FORWARDING_TO_NORMAL_HOME_EXTRA, false) == true) return
 
+        if (launchFirstAvailableNormalHomeTarget()) return
+        Log.w(TAG, "No available normal home target could be launched.")
+    }
+
+    private fun launchFirstAvailableNormalHomeTarget(): Boolean {
         val saved = loadSavedNormalHomeComponent()
         val discovered = discoverNormalHomeComponent()
         val targets = listOfNotNull(saved, discovered)
@@ -279,10 +321,52 @@ class MainActivity : AppCompatActivity() {
 
         for (target in targets) {
             if (!isAvailableHomeComponent(target)) continue
-            if (launchNormalHomeComponent(target)) return
+            if (launchNormalHomeComponent(target)) return true
         }
+        return false
+    }
 
-        Log.w(TAG, "No available normal home target could be launched.")
+    private fun applyPendingUnlockDecisionIfNeeded(launchIntent: Intent?): Boolean {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (launchIntent?.getBooleanExtra(LockAlertNotifier.EXTRA_FROM_TIMER_LOCK_NOTIFICATION, false) == true) {
+            clearPendingUnlockDecisionIfNeeded(prefs, "notification_tap")
+            Log.i(TAG, "applyPendingUnlockDecisionIfNeeded: skipped by notification tap")
+            return false
+        }
+        val pending = prefs.getBoolean(PENDING_UNLOCK_DECISION_ONCE_KEY, false)
+        val isLocked = isLockedNow()
+        val isDefaultHome = isAppDefaultHome()
+        val homeSettingsInProgress = prefs.getBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
+        Log.i(
+            TAG,
+            "applyPendingUnlockDecisionIfNeeded: pending=$pending, isLocked=$isLocked, isDefaultHome=$isDefaultHome, homeSettingsInProgress=$homeSettingsInProgress"
+        )
+        if (!pending) return false
+        if (!isDefaultHome) return false
+        if (homeSettingsInProgress) return false
+
+        clearPendingUnlockDecisionIfNeeded(prefs, "ignored_notification_path")
+        return if (isLocked) {
+            Log.i(TAG, "applyPendingUnlockDecisionIfNeeded: keep wakasama home (locked)")
+            true
+        } else {
+            val forwarded = launchFirstAvailableNormalHomeTarget()
+            if (!forwarded) {
+                Log.w(TAG, "applyPendingUnlockDecisionIfNeeded: no normal home target available")
+            } else {
+                Log.i(TAG, "applyPendingUnlockDecisionIfNeeded: forwarded to normal home (unlocked)")
+            }
+            forwarded
+        }
+    }
+
+    private fun clearPendingUnlockDecisionIfNeeded(
+        prefs: android.content.SharedPreferences,
+        reason: String
+    ) {
+        if (!prefs.getBoolean(PENDING_UNLOCK_DECISION_ONCE_KEY, false)) return
+        prefs.edit { putBoolean(PENDING_UNLOCK_DECISION_ONCE_KEY, false) }
+        Log.i(TAG, "clearPendingUnlockDecisionIfNeeded: reason=$reason")
     }
 
     private fun isAvailableHomeComponent(component: ComponentName): Boolean {
@@ -428,6 +512,15 @@ class MainActivity : AppCompatActivity() {
         val button = findViewById<View>(R.id.openSettingsButton)
         button.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
+        }
+    }
+
+    private fun setSubmitButtonSubmitting(submitting: Boolean) {
+        submitButton.isEnabled = !submitting
+        submitButtonLabel.text = if (submitting) {
+            getString(R.string.submit_and_unlock_submitting)
+        } else {
+            getString(R.string.submit_and_unlock)
         }
     }
 
