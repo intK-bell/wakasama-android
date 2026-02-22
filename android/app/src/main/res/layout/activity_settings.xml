@@ -48,6 +48,7 @@
             android:id="@+id/questionContentLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+
             android:layout_marginTop="10dp"
             android:text="@string/question_content_label"
             android:textColor="@color/lotus_ink"
@@ -57,6 +58,7 @@
             android:id="@+id/questionsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
             android:layout_marginTop="8dp"
             android:orientation="vertical" />
 
@@ -75,6 +77,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:layout_marginStart="6dp"
             android:autofillHints="emailAddress"
             android:hint="@string/hint_mail_to"
             android:inputType="textEmailAddress"
@@ -87,6 +90,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+            android:layout_marginStart="6dp"
             android:text="@string/mail_delivery_note"
             android:textColor="@color/duck_egg_cyan_deep"
             android:textSize="12sp" />
@@ -115,6 +119,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+
             android:backgroundTint="@color/duck_egg_cyan_deep"
             android:popupBackground="@color/moon_white" />
 
@@ -125,8 +130,7 @@
             android:layout_marginTop="10dp"
             android:text="@string/weekday_select_label"
             android:textColor="@color/lotus_ink"
-            android:visibility="gone"
-            android:textStyle="bold" />
+            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/weekdayContainer"
@@ -168,9 +172,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginStart="8dp"
                 android:textColor="@color/lotus_ink"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
             <Button
                 android:id="@+id/editLockTimeButton"
@@ -198,6 +202,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:layout_marginStart="6dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -254,6 +259,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:layout_marginStart="6dp"
                     android:text="@string/normal_home_not_selected"
                     android:textColor="@color/lotus_ink"
                     android:textSize="16sp" />
