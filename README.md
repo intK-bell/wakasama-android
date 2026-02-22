@@ -43,3 +43,7 @@ Set required environment variables (details: `lambda/README.md`):
 - CloudTrail trails are not configured in the current environment (`describe-trails` is empty), so no CloudTrail S3 archive is in use.
 - API Gateway access/execution logging is currently disabled for this app API stage.
 - On-device settings/cache (e.g. local `mail_to` setting, retry queue) are persisted locally and are not currently capped to 90 days.
+
+## Google Play submission docs
+
+- Privacy policy draft: `android/docs/privacy-policy-ja.md`

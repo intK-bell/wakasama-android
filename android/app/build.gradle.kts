@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.File
+import org.gradle.api.GradleException
 
 fun readDotEnv(file: File): Map<String, String> {
     if (!file.exists()) return emptyMap()
@@ -31,6 +32,10 @@ fun asBuildConfigString(value: String): String = "\"${value.replace("\"", "\\\""
 val dotEnv = readDotEnv(rootProject.file(".env"))
 val defaultApiBaseUrl = resolveConfigValue("API_BASE_URL", dotEnv)
 val deviceId = resolveConfigValue("DEVICE_ID", dotEnv)
+val releaseKeystorePath = resolveConfigValue("ANDROID_RELEASE_KEYSTORE_PATH", dotEnv)
+val releaseStorePassword = resolveConfigValue("ANDROID_RELEASE_STORE_PASSWORD", dotEnv)
+val releaseKeyAlias = resolveConfigValue("ANDROID_RELEASE_KEY_ALIAS", dotEnv)
+val releaseKeyPassword = resolveConfigValue("ANDROID_RELEASE_KEY_PASSWORD", dotEnv)
 
 plugins {
     id("com.android.application")
@@ -62,6 +67,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            if (releaseKeystorePath.isNotBlank()) {
+                storeFile = file(releaseKeystorePath)
+            }
+            storePassword = releaseStorePassword
+            keyAlias = releaseKeyAlias
+            keyPassword = releaseKeyPassword
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -69,7 +85,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -85,6 +101,25 @@ android {
     lint {
         // Keep current stable network stack versions; ignore auto-update suggestions.
         disable += "NewerVersionAvailable"
+    }
+}
+
+val releaseBuildRequested = gradle.startParameter.taskNames.any { task ->
+    val lower = task.lowercase()
+    "release" in lower || "bundle" in lower || "publish" in lower
+}
+
+if (releaseBuildRequested) {
+    val missing = buildList {
+        if (releaseKeystorePath.isBlank()) add("ANDROID_RELEASE_KEYSTORE_PATH")
+        if (releaseStorePassword.isBlank()) add("ANDROID_RELEASE_STORE_PASSWORD")
+        if (releaseKeyAlias.isBlank()) add("ANDROID_RELEASE_KEY_ALIAS")
+        if (releaseKeyPassword.isBlank()) add("ANDROID_RELEASE_KEY_PASSWORD")
+    }
+    if (missing.isNotEmpty()) {
+        throw GradleException(
+            "Release signing is not configured. Missing: ${missing.joinToString(", ")}"
+        )
     }
 }
 

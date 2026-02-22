@@ -14,9 +14,6 @@ class LockEventReceiver : BroadcastReceiver() {
         val action = intent?.action ?: return
         val appContext = context.applicationContext
         when (action) {
-            LockScheduler.ACTION_TIMER_LOCK -> {
-                LockScheduler.onTimerAlarmFired(appContext)
-            }
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
             ACTION_TIME_SET,

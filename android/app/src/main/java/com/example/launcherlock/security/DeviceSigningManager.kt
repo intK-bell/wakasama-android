@@ -1,7 +1,7 @@
 package com.example.launcherlock.security
 
 import android.content.Context
-import android.provider.Settings
+import androidx.core.content.edit
 import com.example.launcherlock.BuildConfig
 import java.nio.charset.StandardCharsets
 import java.security.KeyPairGenerator
@@ -20,17 +20,21 @@ class DeviceSigningManager(
     companion object {
         private const val KEYSTORE_TYPE = "AndroidKeyStore"
         private const val KEY_ALIAS = "launcher_lock_signing_v1"
+        private const val PREFS_NAME = "launcher_lock"
+        private const val DEVICE_ID_KEY = "generated_device_id"
     }
 
     fun deviceId(): String {
         val fromBuildConfig = BuildConfig.DEVICE_ID.trim()
         if (fromBuildConfig.isNotEmpty()) return fromBuildConfig
 
-        val androidId = Settings.Secure.getString(
-            appContext.contentResolver,
-            Settings.Secure.ANDROID_ID
-        )?.trim().orEmpty()
-        return androidId.ifBlank { "device-unknown" }
+        val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val existing = prefs.getString(DEVICE_ID_KEY, null)?.trim().orEmpty()
+        if (existing.isNotEmpty()) return existing
+
+        val generated = "app-${UUID.randomUUID()}"
+        prefs.edit { putString(DEVICE_ID_KEY, generated) }
+        return generated
     }
 
     fun currentEpochSeconds(): Long = System.currentTimeMillis() / 1_000L

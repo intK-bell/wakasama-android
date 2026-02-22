@@ -1,5 +1,6 @@
 package com.example.launcherlock.scheduler
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -24,7 +25,6 @@ object LockScheduler {
     private const val LOCK_MINUTE_KEY = "lock_minute"
     private const val DEFAULT_LOCK_HOUR = 14
     private const val DEFAULT_LOCK_MINUTE = 0
-    const val ACTION_TIMER_LOCK = "com.example.launcherlock.action.TIMER_LOCK"
     private const val TIMER_LOCK_REQUEST_CODE = 10_021
     private const val LEGACY_LOCK_CHECK_WORK = "lock_check_14_00"
     private const val LEGACY_PERIODIC_LOCK_CHECK_WORK = "lock_check_daily"
@@ -37,6 +37,7 @@ object LockScheduler {
         scheduleRetry(context)
     }
 
+    @SuppressLint("MissingPermission")
     private fun scheduleDailyLockAlarm(context: Context) {
         cancelLegacyLockWorks(context)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -75,9 +76,7 @@ object LockScheduler {
     }
 
     private fun timerLockPendingIntent(context: Context): PendingIntent {
-        val intent = Intent(context, com.example.launcherlock.receiver.LockEventReceiver::class.java).apply {
-            action = ACTION_TIMER_LOCK
-        }
+        val intent = Intent(context, com.example.launcherlock.receiver.TimerLockReceiver::class.java)
         return PendingIntent.getBroadcast(
             context,
             TIMER_LOCK_REQUEST_CODE,
