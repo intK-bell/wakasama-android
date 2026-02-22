@@ -19,7 +19,6 @@ class AuthInterceptor(
         val bodyHash = sha256Hex(bodyString)
         val canonical = listOf(deviceId, timestamp, nonce, bodyHash).joinToString("\n")
         val signature = signingManager.signCanonical(canonical)
-        val token = signingManager.appToken()
 
         val request = chain.request().newBuilder()
             .addHeader("X-Device-Id", deviceId)
@@ -27,7 +26,6 @@ class AuthInterceptor(
             .addHeader("X-Nonce", nonce)
             .addHeader("X-Signature", signature)
             .addHeader("X-Auth-Version", "v2")
-            .addHeader("X-App-Token", token)
             .addHeader("Content-Type", "application/json")
             .build()
         return chain.proceed(request)

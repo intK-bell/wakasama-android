@@ -108,9 +108,8 @@ class MainActivity : AppCompatActivity() {
                 try {
                     val baseUrl = prefs.getString("api_base_url", "") ?: ""
                     val signingManager = DeviceSigningManager(applicationContext)
-                    val appToken = signingManager.appToken()
 
-                    if (baseUrl.isBlank() || appToken.isBlank()) {
+                    if (baseUrl.isBlank()) {
                         showErrorPopup(getString(R.string.msg_missing_config))
                         return@launch
                     }

@@ -1,13 +1,17 @@
 package com.example.launcherlock.lock
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.pm.PackageManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.launcherlock.MainActivity
 import com.example.launcherlock.R
 
@@ -15,6 +19,7 @@ object LockAlertNotifier {
     private const val CHANNEL_ID = "lock_alerts"
     private const val CHANNEL_NAME = "結界通知"
     private const val NOTIFICATION_ID = 10_101
+    private const val TAG = "LockAlertNotifier"
     const val EXTRA_FROM_TIMER_LOCK_NOTIFICATION = "from_timer_lock_notification"
 
     fun notifyTimerLockTriggered(context: Context) {
@@ -43,7 +48,20 @@ object LockAlertNotifier {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .build()
 
-        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        try {
+            NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+        } catch (securityException: SecurityException) {
+            Log.w(TAG, "notifyTimerLockTriggered: POST_NOTIFICATIONS denied", securityException)
+        }
     }
 
     private fun createChannelIfNeeded(context: Context) {

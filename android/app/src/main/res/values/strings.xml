@@ -38,7 +38,7 @@
     <string name="apply_question_count">質問数を反映</string>
     <string name="lock_mode_label">予約日</string>
     <string name="lock_mode_weekday">曜日指定（下で選択）</string>
-    <string name="lock_mode_holiday">土日祝</string>
+    <string name="lock_mode_holiday">土日</string>
     <string name="lock_mode_every_day">毎日</string>
     <string name="lock_time_label">予約時刻</string>
     <string name="edit_lock_time">変更</string>

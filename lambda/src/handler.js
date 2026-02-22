@@ -2,10 +2,10 @@ import "./env.js";
 import { sendAnswerMail } from "./mailer.js";
 import { buildMailText, validatePayload } from "./validate.js";
 import {
+  createDevicePublicKey,
   getDevicePublicKey,
   reserveIdempotencyKey,
-  reserveNonce,
-  upsertDevicePublicKey
+  reserveNonce
 } from "./security-store.js";
 import { buildCanonical, validateSignatureHeaders, verifySignature } from "./signature-auth.js";
 
@@ -148,6 +148,9 @@ function validateRegistrationPayload(payload) {
   return null;
 }
 
+const IDEMPOTENCY_TTL_DAYS = Number(process.env.IDEMPOTENCY_TTL_DAYS || "90");
+const IDEMPOTENCY_TTL_SECONDS = IDEMPOTENCY_TTL_DAYS * 24 * 60 * 60;
+
 export const handler = async (event) => {
   const path = pathOf(event);
   const rawBody = parseRawBody(event);
@@ -167,17 +170,39 @@ export const handler = async (event) => {
     if (err) {
       return response(400, { ok: false, message: err });
     }
-    const auth = await isRegistrationSignatureAuthorized(event, rawBody, payload);
+    const deviceId = payload.deviceId.trim();
+    const publicKeyPem = payload.publicKeyPem.trim();
+    const existingPublicKey = await getDevicePublicKey(deviceId);
+    if (existingPublicKey && existingPublicKey.trim() !== publicKeyPem) {
+      return response(409, { ok: false, message: "device key already registered" });
+    }
+
+    const auth = await isRegistrationSignatureAuthorized(
+      event,
+      rawBody,
+      { ...payload, deviceId, publicKeyPem }
+    );
     if (!auth.ok) {
       return response(401, { ok: false, message: auth.message || "unauthorized" });
     }
 
+    if (existingPublicKey && existingPublicKey.trim() === publicKeyPem) {
+      return response(200, { ok: true, message: "already registered" });
+    }
+
     try {
-      await upsertDevicePublicKey(
-        payload.deviceId.trim(),
-        payload.publicKeyPem.trim(),
+      const created = await createDevicePublicKey(
+        deviceId,
+        publicKeyPem,
         payload.keyAlgorithm || "ECDSA_P256_SHA256"
       );
+      if (!created) {
+        const latest = await getDevicePublicKey(deviceId);
+        if (latest && latest.trim() === publicKeyPem) {
+          return response(200, { ok: true, message: "already registered" });
+        }
+        return response(409, { ok: false, message: "device key already registered" });
+      }
       return response(200, { ok: true, message: "registered" });
     } catch (e) {
       console.error("register device key failed", e);
@@ -205,7 +230,7 @@ export const handler = async (event) => {
 
   const idempotencyKey = String(payload.idempotencyKey || "").trim();
   if (idempotencyKey) {
-    const ttlSeconds = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
+    const ttlSeconds = Math.floor(Date.now() / 1000) + IDEMPOTENCY_TTL_SECONDS;
     const isFirstRequest = await reserveIdempotencyKey(
       signatureAuth.deviceId,
       idempotencyKey,

@@ -15,7 +15,6 @@ import com.example.launcherlock.lock.LockAlertNotifier
 import com.example.launcherlock.worker.SubmissionRetryWorker
 import java.time.Duration
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
@@ -32,7 +31,6 @@ object LockScheduler {
     private const val LEGACY_ONE_SHOT_LOCK_CHECK_WORK = "lock_check_daily_once"
     private const val RETRY_WORK = "submission_retry"
     private const val PENDING_UNLOCK_DECISION_ONCE_KEY = "pending_unlock_decision_once"
-    private val JST_ZONE: ZoneId = ZoneId.of("Asia/Tokyo")
 
     fun schedule(context: Context) {
         scheduleDailyLockAlarm(context)
@@ -44,8 +42,8 @@ object LockScheduler {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lockHour = prefs.getInt(LOCK_HOUR_KEY, DEFAULT_LOCK_HOUR).coerceIn(0, 23)
         val lockMinute = prefs.getInt(LOCK_MINUTE_KEY, DEFAULT_LOCK_MINUTE).coerceIn(0, 59)
-        val now = ZonedDateTime.now(JST_ZONE)
-        val nextRunTime = now.toLocalDate().atTime(LocalTime.of(lockHour, lockMinute)).atZone(JST_ZONE).let {
+        val now = ZonedDateTime.now()
+        val nextRunTime = now.toLocalDate().atTime(LocalTime.of(lockHour, lockMinute)).atZone(now.zone).let {
             if (it.isAfter(now)) it else it.plusDays(1)
         }
         val triggerAtMillis = now.toInstant().toEpochMilli() +

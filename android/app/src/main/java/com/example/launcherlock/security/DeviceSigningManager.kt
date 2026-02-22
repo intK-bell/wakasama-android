@@ -33,8 +33,6 @@ class DeviceSigningManager(
         return androidId.ifBlank { "device-unknown" }
     }
 
-    fun appToken(): String = BuildConfig.APP_TOKEN.trim()
-
     fun currentEpochSeconds(): Long = System.currentTimeMillis() / 1_000L
 
     fun nonce(): String = UUID.randomUUID().toString()

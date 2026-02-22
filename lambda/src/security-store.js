@@ -45,6 +45,33 @@ export async function upsertDevicePublicKey(deviceId, publicKeyPem, keyAlgorithm
   );
 }
 
+export async function createDevicePublicKey(deviceId, publicKeyPem, keyAlgorithm = "ECDSA_P256_SHA256") {
+  const now = Date.now();
+  try {
+    await ddb.send(
+      new PutCommand({
+        TableName: tableName,
+        Item: {
+          pk: deviceKeyPk(deviceId),
+          sk: "KEY",
+          deviceId,
+          publicKeyPem,
+          keyAlgorithm,
+          createdAt: now,
+          updatedAt: now
+        },
+        ConditionExpression: "attribute_not_exists(pk) AND attribute_not_exists(sk)"
+      })
+    );
+    return true;
+  } catch (e) {
+    if (e?.name === "ConditionalCheckFailedException") {
+      return false;
+    }
+    throw e;
+  }
+}
+
 export async function getDevicePublicKey(deviceId) {
   const res = await ddb.send(
     new GetCommand({

@@ -31,6 +31,15 @@ Set required environment variables (details: `lambda/README.md`):
 
 ## Notes
 
-- Android build config (`APP_TOKEN`, `API_BASE_URL`, `DEVICE_ID`) is loaded from Gradle property / process env / `.env` in this order.
+- Android build config (`API_BASE_URL`, `DEVICE_ID`) is loaded from Gradle property / process env / `.env` in this order.
 - Lambda secrets/tokens are loaded from process env; for local development, `.env` is also supported.
 - Submit API uses request signatures (`X-Signature` headers).
+
+## Data retention policy
+
+- Server-side retention policy is 90 days for operational logs and replay-control data.
+- Lambda CloudWatch Logs retention is set to 90 days (`/aws/lambda/launcher-lock-submit-answers`).
+- DynamoDB replay-control records (`expiresAt`, e.g. `idempotencyKey`/nonce) are TTL-managed and expire automatically.
+- CloudTrail trails are not configured in the current environment (`describe-trails` is empty), so no CloudTrail S3 archive is in use.
+- API Gateway access/execution logging is currently disabled for this app API stage.
+- On-device settings/cache (e.g. local `mail_to` setting, retry queue) are persisted locally and are not currently capped to 90 days.

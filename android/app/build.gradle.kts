@@ -29,7 +29,6 @@ fun resolveConfigValue(key: String, dotEnv: Map<String, String>): String {
 fun asBuildConfigString(value: String): String = "\"${value.replace("\"", "\\\"")}\""
 
 val dotEnv = readDotEnv(rootProject.file(".env"))
-val appToken = resolveConfigValue("APP_TOKEN", dotEnv)
 val defaultApiBaseUrl = resolveConfigValue("API_BASE_URL", dotEnv)
 val deviceId = resolveConfigValue("DEVICE_ID", dotEnv)
 
@@ -50,11 +49,6 @@ android {
         targetSdk = 36
         versionCode = 17
         versionName = "1.0.17"
-        buildConfigField(
-            "String",
-            "APP_TOKEN",
-            asBuildConfigString(appToken)
-        )
         buildConfigField(
             "String",
             "DEFAULT_API_BASE_URL",
