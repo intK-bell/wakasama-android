@@ -139,17 +139,23 @@ class MainActivity : AppCompatActivity() {
                     val useCase = AnswerUnlockUseCase(repo)
                     val deviceId = signingManager.deviceId()
 
-                    val success = useCase.submitAnswersAndUnlock(
+                    val submitResult = useCase.submitAnswersAndUnlock(
                         deviceId = deviceId,
                         to = mailTo,
                         answers = answers
                     )
 
-                    if (success) {
-                        val message = resources.getStringArray(R.array.unlock_success_messages).random()
-                        showSuccessPopup(message)
-                    } else {
-                        showErrorPopup(getString(R.string.msg_queued))
+                    when (submitResult) {
+                        SubmissionRepository.SubmitResult.SUCCESS -> {
+                            val message = resources.getStringArray(R.array.unlock_success_messages).random()
+                            showSuccessPopup(message)
+                        }
+                        SubmissionRepository.SubmitResult.QUEUED_RATE_LIMITED -> {
+                            showErrorPopup(getString(R.string.msg_rate_limited_queued))
+                        }
+                        SubmissionRepository.SubmitResult.QUEUED -> {
+                            showErrorPopup(getString(R.string.msg_queued))
+                        }
                     }
                 } finally {
                     isSubmitting = false

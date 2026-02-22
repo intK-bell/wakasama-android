@@ -40,6 +40,7 @@ Set required environment variables (details: `lambda/README.md`):
 - Server-side retention policy is 90 days for operational logs and replay-control data.
 - Lambda CloudWatch Logs retention is set to 90 days (`/aws/lambda/launcher-lock-submit-answers`).
 - DynamoDB replay-control records (`expiresAt`, e.g. `idempotencyKey`/nonce) are TTL-managed and expire automatically.
+- DynamoDB device public key records (`pk=DEVICE#...`, `sk=KEY`) are retained persistently (no TTL) to keep device registration stable.
 - CloudTrail trails are not configured in the current environment (`describe-trails` is empty), so no CloudTrail S3 archive is in use.
 - API Gateway access/execution logging is currently disabled for this app API stage.
 - On-device settings/cache (e.g. local `mail_to` setting, retry queue) are persisted locally and are not currently capped to 90 days.
@@ -47,3 +48,7 @@ Set required environment variables (details: `lambda/README.md`):
 ## Google Play submission docs
 
 - Privacy policy draft: `android/docs/privacy-policy-ja.md`
+
+## Security docs
+
+- Rate limit hardening plan (strict): `infra/rate-limit-hardening-plan.md`

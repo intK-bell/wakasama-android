@@ -6,6 +6,9 @@ export function validatePayload(payload) {
   if (typeof payload.deviceId !== "string" || payload.deviceId.trim() === "") {
     return "deviceId is required";
   }
+  if (!isUuidV4(payload.deviceId)) {
+    return "deviceId must be UUIDv4";
+  }
 
   if (typeof payload.answeredAt !== "string" || payload.answeredAt.trim() === "") {
     return "answeredAt is required";
@@ -35,6 +38,11 @@ export function validatePayload(payload) {
   }
 
   return null;
+}
+
+export function isUuidV4(value) {
+  const v = String(value || "").trim();
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 }
 
 function isValidEmail(value) {

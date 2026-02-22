@@ -1,6 +1,6 @@
 import "./env.js";
 import { sendAnswerMail } from "./mailer.js";
-import { buildMailText, validatePayload } from "./validate.js";
+import { buildMailText, isUuidV4, validatePayload } from "./validate.js";
 import {
   createDevicePublicKey,
   getDevicePublicKey,
@@ -138,6 +138,9 @@ function validateRegistrationPayload(payload) {
   if (!payload || typeof payload !== "object") return "invalid payload";
   if (typeof payload.deviceId !== "string" || payload.deviceId.trim() === "") {
     return "deviceId is required";
+  }
+  if (!isUuidV4(payload.deviceId)) {
+    return "deviceId must be UUIDv4";
   }
   if (typeof payload.publicKeyPem !== "string" || payload.publicKeyPem.trim() === "") {
     return "publicKeyPem is required";

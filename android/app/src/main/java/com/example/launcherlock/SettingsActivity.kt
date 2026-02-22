@@ -67,6 +67,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
     private lateinit var toggleLockButton: Button
     private var foldBlockedDialog: AlertDialog? = null
+    private var pendingLockedState: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,6 +92,7 @@ class SettingsActivity : AppCompatActivity() {
         val resultText = findViewById<TextView>(R.id.settingsResultText)
         statusText = findViewById(R.id.statusText)
         toggleLockButton = findViewById(R.id.runLockCheckButton)
+        pendingLockedState = loadLockedState()
 
         mailToInput.setText(prefs.getString("mail_to", ""))
         var selectedLockHour = prefs.getInt("lock_hour", DEFAULT_LOCK_HOUR).coerceIn(0, 23)
@@ -241,6 +243,7 @@ class SettingsActivity : AppCompatActivity() {
                 putString("lock_weekdays", selectedWeekdays.joinToString(","))
                 putInt("lock_hour", selectedLockHour)
                 putInt("lock_minute", selectedLockMinute)
+                putBoolean("is_locked", pendingLockedState)
                 putInt("question_count", desiredCount)
                 questions.forEachIndexed { idx, q ->
                     putString("question_${idx + 1}", q)
@@ -273,7 +276,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         toggleLockButton.setOnClickListener {
-            toggleLockState()
+            pendingLockedState = !pendingLockedState
             updateLockStateLabel()
         }
 
@@ -321,27 +324,18 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun updateLockStateLabel() {
-        val locked = isLockedNow()
-        val state = if (locked) getString(R.string.locked) else getString(R.string.unlocked)
+        val state = if (pendingLockedState) getString(R.string.locked) else getString(R.string.unlocked)
         statusText.text = getString(R.string.current_state, state)
-        toggleLockButton.text = if (locked) {
+        toggleLockButton.text = if (pendingLockedState) {
             getString(R.string.unlock_now)
         } else {
             getString(R.string.lock_now)
         }
     }
 
-    private fun isLockedNow(): Boolean {
+    private fun loadLockedState(): Boolean {
         return getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getBoolean("is_locked", false)
-    }
-
-    private fun toggleLockState() {
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val current = prefs.getBoolean("is_locked", false)
-        prefs.edit {
-            putBoolean("is_locked", !current)
-        }
     }
 
     private fun currentQuestionValues(): List<String> {

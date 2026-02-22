@@ -16,16 +16,35 @@ class SubmissionRepository(
     private val signingManager: DeviceSigningManager,
     moshi: Moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 ) {
+    enum class SubmitResult {
+        SUCCESS,
+        QUEUED_RATE_LIMITED,
+        QUEUED
+    }
+
+    private enum class RegisterResult {
+        OK,
+        RATE_LIMITED,
+        FAILED
+    }
+
     companion object {
         private const val TAG = "SubmissionRepository"
     }
 
     private val adapter = moshi.adapter(AnswerPayload::class.java)
 
-    suspend fun submitOrQueue(payload: AnswerPayload): Boolean {
-        if (!registerDeviceKey(payload.deviceId)) {
-            queue(payload)
-            return false
+    suspend fun submitOrQueue(payload: AnswerPayload): SubmitResult {
+        when (registerDeviceKey(payload.deviceId)) {
+            RegisterResult.RATE_LIMITED -> {
+                queue(payload)
+                return SubmitResult.QUEUED_RATE_LIMITED
+            }
+            RegisterResult.FAILED -> {
+                queue(payload)
+                return SubmitResult.QUEUED
+            }
+            RegisterResult.OK -> Unit
         }
         return try {
             val response = api.submitAnswers(payload)
@@ -33,19 +52,23 @@ class SubmissionRepository(
             val accepted = response.isSuccessful && bodyOk != false
             if (accepted) {
                 Log.i(TAG, "submitOrQueue success code=${response.code()}")
-                true
+                SubmitResult.SUCCESS
             } else {
                 Log.w(
                     TAG,
                     "submitOrQueue failed code=${response.code()} ok=$bodyOk body=${response.errorBody()?.string()}"
                 )
                 queue(payload)
-                false
+                if (response.code() == 429) {
+                    SubmitResult.QUEUED_RATE_LIMITED
+                } else {
+                    SubmitResult.QUEUED
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "submitOrQueue exception: ${e.message}", e)
             queue(payload)
-            false
+            SubmitResult.QUEUED
         }
     }
 
@@ -60,21 +83,22 @@ class SubmissionRepository(
             }
 
             val ok = try {
-                if (!registerDeviceKey(payload.deviceId)) {
+                val registerResult = registerDeviceKey(payload.deviceId)
+                if (registerResult != RegisterResult.OK) {
                     false
                 } else {
-                val response = api.submitAnswers(payload)
-                val bodyOk = response.body()?.ok
-                val accepted = response.isSuccessful && bodyOk != false
-                if (!accepted) {
-                    Log.w(
-                        TAG,
-                        "flushQueue failed item=${item.id} code=${response.code()} ok=$bodyOk body=${response.errorBody()?.string()}"
-                    )
-                } else {
-                    Log.i(TAG, "flushQueue success item=${item.id} code=${response.code()}")
-                }
-                accepted
+                    val response = api.submitAnswers(payload)
+                    val bodyOk = response.body()?.ok
+                    val accepted = response.isSuccessful && bodyOk != false
+                    if (!accepted) {
+                        Log.w(
+                            TAG,
+                            "flushQueue failed item=${item.id} code=${response.code()} ok=$bodyOk body=${response.errorBody()?.string()}"
+                        )
+                    } else {
+                        Log.i(TAG, "flushQueue success item=${item.id} code=${response.code()}")
+                    }
+                    accepted
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "flushQueue exception item=${item.id}: ${e.message}", e)
@@ -102,11 +126,11 @@ class SubmissionRepository(
         dao.insert(PendingSubmissionEntity(payloadJson = json))
     }
 
-    private suspend fun registerDeviceKey(deviceId: String): Boolean {
+    private suspend fun registerDeviceKey(deviceId: String): RegisterResult {
         val localDeviceId = signingManager.deviceId()
         if (deviceId.trim() != localDeviceId.trim()) {
             Log.w(TAG, "registerDeviceKey skipped: payload deviceId mismatch")
-            return false
+            return RegisterResult.FAILED
         }
         return try {
             val response = api.registerDeviceKey(
@@ -123,10 +147,14 @@ class SubmissionRepository(
                     "registerDeviceKey failed code=${response.code()} ok=$bodyOk body=${response.errorBody()?.string()}"
                 )
             }
-            accepted
+            when {
+                accepted -> RegisterResult.OK
+                response.code() == 429 -> RegisterResult.RATE_LIMITED
+                else -> RegisterResult.FAILED
+            }
         } catch (e: Exception) {
             Log.e(TAG, "registerDeviceKey exception: ${e.message}", e)
-            false
+            RegisterResult.FAILED
         }
     }
 

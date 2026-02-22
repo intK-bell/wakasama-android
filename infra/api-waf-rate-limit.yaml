@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Strict rate limiting Web ACL for launcher-lock API (for REST API or CloudFront integration)
+
+Parameters:
+  ApiId:
+    Type: String
+    Description: API Gateway HTTP API ID (e.g. a1b2c3d4)
+  StageName:
+    Type: String
+    Default: prod
+    Description: API Gateway stage name
+  WebAclName:
+    Type: String
+    Default: launcher-lock-strict-rate-limit
+    Description: WAF Web ACL name
+  RuleActionMode:
+    Type: String
+    Default: COUNT
+    AllowedValues:
+      - COUNT
+      - BLOCK
+    Description: Start with COUNT, then switch to BLOCK after observation.
+  RegisterIpLimitPer5Min:
+    Type: Number
+    Default: 10
+    MinValue: 10
+    Description: Max requests per 5 minutes per IP for /register-device-key
+  SubmitIpLimitPer5Min:
+    Type: Number
+    Default: 30
+    MinValue: 1
+    Description: Max requests per 5 minutes per IP for /submit-answers
+
+Conditions:
+  IsCountMode: !Equals [!Ref RuleActionMode, COUNT]
+
+Resources:
+  ApiRateLimitWebAcl:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Ref WebAclName
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: launcherLockApiWebAcl
+      Rules:
+        - Name: RegisterDeviceKeyIpRateLimit
+          Priority: 0
+          Action: !If
+            - IsCountMode
+            - Count: {}
+            - Block: {}
+          Statement:
+            RateBasedStatement:
+              Limit: !Ref RegisterIpLimitPer5Min
+              AggregateKeyType: IP
+              ScopeDownStatement:
+                AndStatement:
+                  Statements:
+                    - ByteMatchStatement:
+                        FieldToMatch:
+                          Method: {}
+                        PositionalConstraint: EXACTLY
+                        SearchString: POST
+                        TextTransformations:
+                          - Priority: 0
+                            Type: NONE
+                    - ByteMatchStatement:
+                        FieldToMatch:
+                          UriPath: {}
+                        PositionalConstraint: ENDS_WITH
+                        SearchString: /register-device-key
+                        TextTransformations:
+                          - Priority: 0
+                            Type: NONE
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: registerDeviceKeyIpRateLimit
+        - Name: SubmitAnswersIpRateLimit
+          Priority: 1
+          Action: !If
+            - IsCountMode
+            - Count: {}
+            - Block: {}
+          Statement:
+            RateBasedStatement:
+              Limit: !Ref SubmitIpLimitPer5Min
+              AggregateKeyType: IP
+              ScopeDownStatement:
+                AndStatement:
+                  Statements:
+                    - ByteMatchStatement:
+                        FieldToMatch:
+                          Method: {}
+                        PositionalConstraint: EXACTLY
+                        SearchString: POST
+                        TextTransformations:
+                          - Priority: 0
+                            Type: NONE
+                    - ByteMatchStatement:
+                        FieldToMatch:
+                          UriPath: {}
+                        PositionalConstraint: ENDS_WITH
+                        SearchString: /submit-answers
+                        TextTransformations:
+                          - Priority: 0
+                            Type: NONE
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: submitAnswersIpRateLimit
+
+  ApiWebAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      WebACLArn: !GetAtt ApiRateLimitWebAcl.Arn
+      ResourceArn: !Sub arn:aws:apigateway:${AWS::Region}::/apis/${ApiId}/stages/${StageName}
+
+Outputs:
+  WebAclArn:
+    Description: ARN of the created Web ACL
+    Value: !GetAtt ApiRateLimitWebAcl.Arn

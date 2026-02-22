@@ -10,13 +10,14 @@
     <string name="current_state">結界：%1$s</string>
     <string name="locked">張られている</string>
     <string name="unlocked">解けている</string>
-    <string name="msg_missing_config">API設定が不足しとる</string>
-    <string name="msg_sent_and_unlocked">送信成功。ロック解除した</string>
+    <string name="msg_missing_config">API設定が不足しておりまする</string>
+    <string name="msg_sent_and_unlocked">送信成功。ロック解除いたす</string>
     <string name="msg_queued">送信失敗。再送キューへ保存した</string>
+    <string name="msg_rate_limited_queued">ただいま混み合っておりまする。あとで家臣が届けます候</string>
     <string name="popup_error_message">おっと、ちょっと調子悪いみたい。ママ、パパに解除してもらって。</string>
     <string name="popup_success_title">よくがんばったね</string>
     <string name="lock_alert_title">結界の時刻です</string>
-    <string name="lock_alert_text">若様の宿題を開いて、宿題を入力してください。</string>
+    <string name="lock_alert_text">若様の宿題を開いて、宿題を入力しておくれ。</string>
     <string name="lock_alert_channel_description">タイマーで結界が発動した時のお知らせ</string>
     <string name="home_setup_dialog_title">ホームアプリ設定</string>
     <string name="home_setup_dialog_message">若様の宿題をホームアプリに設定して使用してください。\n\n「設定する」を押すとホーム設定画面を開きます。\n開けない場合は、設定＞検索＞「ランチャーモード」を入力＞「若様の宿題」を選択してください。</string>
@@ -57,7 +58,7 @@
     <string name="weekday_fri">金</string>
     <string name="weekday_sat">土</string>
     <string name="weekday_sun">日</string>
-    <string name="weekday_no_reservation_note">※全曜日のチェックを外すと予約無効になります</string>
+    <string name="weekday_no_reservation_note">※全曜日のチェックを外すと自動で結界が張られません</string>
     <string name="msg_missing_mail_to">送信先メールアドレスを設定して</string>
     <string name="msg_invalid_mail_to">メールアドレスの形式が正しくない</string>
     <string name="msg_answer_required">若様、何かご入力くださいませ！</string>

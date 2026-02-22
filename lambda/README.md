@@ -42,6 +42,24 @@ aws cloudformation deploy \
 - 既に同じ公開鍵が登録済みの場合は `already registered` を返します。
 - 別の公開鍵で再登録しようとした場合は `409 device key already registered` を返します。
 
+## Data retention
+
+- 署名検証用の公開鍵レコード（`pk=DEVICE#...`, `sk=KEY`）は永続保持します（TTLなし）。
+- リプレイ対策レコード（nonce / `idempotencyKey`）は `expiresAt` でTTL管理します。
+- `idempotencyKey` のTTL日数は `IDEMPOTENCY_TTL_DAYS`（既定: 90日）です。
+
+## Rate limit
+
+- 厳しめ設定の導入手順は `../infra/rate-limit-hardening-plan.md` を参照してください。
+- 初期導入は `COUNT` 観測 -> `BLOCK` 切替を推奨します。
+- API Gateway ルートスロットル適用スクリプト: `../infra/scripts/set-api-route-throttle.sh`
+- WAFテンプレート: `../infra/api-waf-rate-limit.yaml`
+- 注: 本アプリの API Gateway HTTP API では WAF関連付けに制約があるため、まずルートスロットルを適用します。
+
+## Device ID policy
+
+- `deviceId` は UUIDv4 形式のみ許可します（register / submit 共通）。
+
 ## Request example
 Header:
 - `X-Device-Id: <device-id>`

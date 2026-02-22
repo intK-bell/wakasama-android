@@ -26,13 +26,21 @@ class DeviceSigningManager(
 
     fun deviceId(): String {
         val fromBuildConfig = BuildConfig.DEVICE_ID.trim()
-        if (fromBuildConfig.isNotEmpty()) return fromBuildConfig
+        if (fromBuildConfig.isNotEmpty()) {
+            return normalizeDeviceId(fromBuildConfig)
+        }
 
         val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val existing = prefs.getString(DEVICE_ID_KEY, null)?.trim().orEmpty()
-        if (existing.isNotEmpty()) return existing
+        if (existing.isNotEmpty()) {
+            val normalized = normalizeDeviceId(existing)
+            if (normalized != existing) {
+                prefs.edit { putString(DEVICE_ID_KEY, normalized) }
+            }
+            return normalized
+        }
 
-        val generated = "app-${UUID.randomUUID()}"
+        val generated = UUID.randomUUID().toString()
         prefs.edit { putString(DEVICE_ID_KEY, generated) }
         return generated
     }
@@ -86,5 +94,24 @@ class DeviceSigningManager(
             .build()
         generator.initialize(spec)
         generator.generateKeyPair()
+    }
+
+    private fun normalizeDeviceId(raw: String): String {
+        val trimmed = raw.trim()
+        if (isUuidV4(trimmed)) return trimmed
+
+        // Backward compatibility: migrate "app-<uuidv4>" into plain uuidv4.
+        val legacyPrefix = "app-"
+        if (trimmed.startsWith(legacyPrefix)) {
+            val suffix = trimmed.removePrefix(legacyPrefix)
+            if (isUuidV4(suffix)) return suffix
+        }
+        return UUID.randomUUID().toString()
+    }
+
+    private fun isUuidV4(value: String): Boolean {
+        return Regex(
+            "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+        ).matches(value)
     }
 }
