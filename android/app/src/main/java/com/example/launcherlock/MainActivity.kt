@@ -203,18 +203,50 @@ class MainActivity : AppCompatActivity() {
         if (isExplicitLauncherLaunch()) return
         if (intent.getBooleanExtra(FORWARDING_TO_NORMAL_HOME_EXTRA, false)) return
 
-        val target = loadSavedNormalHomeComponent() ?: discoverNormalHomeComponent() ?: return
-        if (target.packageName == packageName) return
+        val saved = loadSavedNormalHomeComponent()
+        val discovered = discoverNormalHomeComponent()
+        val targets = listOfNotNull(saved, discovered)
+            .distinctBy { "${it.packageName}/${it.className}" }
+            .filter { it.packageName != packageName }
 
+        for (target in targets) {
+            if (!isAvailableHomeComponent(target)) continue
+            if (launchNormalHomeComponent(target)) return
+        }
+
+        Log.w(TAG, "No available normal home target could be launched.")
+    }
+
+    private fun isAvailableHomeComponent(component: ComponentName): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            runCatching {
+                packageManager.getActivityInfo(
+                    component,
+                    PackageManager.ComponentInfoFlags.of(0)
+                )
+            }.isSuccess
+        } else {
+            @Suppress("DEPRECATION")
+            runCatching {
+                packageManager.getActivityInfo(component, 0)
+            }.isSuccess
+        }
+    }
+
+    private fun launchNormalHomeComponent(component: ComponentName): Boolean {
         val launch = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_HOME)
-            component = target
+            this.component = component
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
             putExtra(FORWARDING_TO_NORMAL_HOME_EXTRA, true)
         }
-        runCatching {
+        return runCatching {
             startActivity(launch)
             finish()
+            true
+        }.getOrElse { error ->
+            Log.w(TAG, "Failed to launch normal home: ${component.flattenToShortString()}", error)
+            false
         }
     }
 

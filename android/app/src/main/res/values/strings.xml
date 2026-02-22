@@ -23,10 +23,10 @@
     <string name="home_setup_ignore">無視する</string>
     <string name="open_settings">御支度</string>
     <string name="settings_title">御支度</string>
-    <string name="section_question">質問</string>
+    <string name="section_question">若様に答えて欲しい質問の設定</string>
     <string name="question_content_label">内容</string>
-    <string name="section_send">送信</string>
-    <string name="section_kekkai">結界スケジュール</string>
+    <string name="section_send">若様の回答内容が送られるメールアドレス</string>
+    <string name="section_kekkai">結界発動スケジュール</string>
     <string name="section_kekkai_reservation">予約</string>
     <string name="section_kekkai_operation">操作</string>
     <string name="section_save">保存</string>
@@ -64,7 +64,7 @@
     <string name="question_label_format">質問%1$d: %2$s</string>
     <string name="default_question_1">今日やることは？</string>
     <string name="default_question_2">昨日の反省は？</string>
-    <string name="save_settings">設定を保存</string>
+    <string name="save_settings">御支度を保存</string>
     <string name="msg_settings_saved">設定を保存した</string>
     <string name="msg_settings_required">設定した質問数ぶんの質問文は必須</string>
     <string name="msg_weekday_required">曜日指定モードでは1つ以上の曜日を選んで</string>
