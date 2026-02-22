@@ -35,8 +35,9 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
         private const val ENABLE_PINNED_MODE = false
         private const val PREFS_NAME = LockStateEvaluator.PREFS_NAME
-        private const val HOME_SETUP_COMPLETED_KEY = "home_setup_completed"
         private const val HOME_SETTINGS_IN_PROGRESS_KEY = "home_settings_in_progress"
+        private const val HOME_SETTINGS_REQUESTED_AT_KEY = "home_settings_requested_at"
+        private const val HOME_SETTINGS_RETURN_TIMEOUT_MS = 15 * 60 * 1000L
         private const val SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY = "skip_forward_to_normal_home_once"
         private const val IS_LOCKED_KEY = LockStateEvaluator.IS_LOCKED_KEY
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
@@ -74,7 +75,6 @@ class MainActivity : AppCompatActivity() {
                 putInt("lock_hour", 14)
                 putInt("lock_minute", 0)
                 putBoolean("is_locked", false)
-                putBoolean(HOME_SETUP_COMPLETED_KEY, false)
             }
         }
 
@@ -136,26 +136,24 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val homeSettingsInProgress = prefs.getBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
         val skipForwardBySave = consumeSkipForwardToNormalHomeOnce(prefs)
 
         if (!isAppDefaultHome()) {
+            Log.i(TAG, "onResume: not default home, showing setup guide")
             maybeShowDefaultHomeSetupGuide()
             return
         }
 
-        val setupCompleted = prefs.getBoolean(HOME_SETUP_COMPLETED_KEY, false)
-        val completedThisResume = !setupCompleted
-        skipNextForwardToNormalHome = completedThisResume || homeSettingsInProgress || skipForwardBySave
-        if (!setupCompleted) {
-            prefs.edit {
-                putBoolean(HOME_SETUP_COMPLETED_KEY, true)
-            }
-        }
-        if (homeSettingsInProgress) {
-            prefs.edit {
-                putBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
-            }
+        val shouldOpenSettingsAfterHomeSetup = consumeHomeSettingsReturnOnce(prefs)
+        Log.i(
+            TAG,
+            "onResume: default home, shouldOpenSettingsAfterHomeSetup=$shouldOpenSettingsAfterHomeSetup, skipForwardBySave=$skipForwardBySave"
+        )
+        skipNextForwardToNormalHome = shouldOpenSettingsAfterHomeSetup || skipForwardBySave
+        if (shouldOpenSettingsAfterHomeSetup) {
+            Log.i(TAG, "onResume: opening SettingsActivity after home setup return")
+            startActivity(Intent(this, SettingsActivity::class.java))
+            return
         }
 
         applyConfiguredQuestions()
@@ -175,6 +173,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return shouldSkip
+    }
+
+    private fun consumeHomeSettingsReturnOnce(
+        prefs: android.content.SharedPreferences
+    ): Boolean {
+        val inProgress = prefs.getBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
+        if (!inProgress) return false
+
+        val requestedAt = prefs.getLong(HOME_SETTINGS_REQUESTED_AT_KEY, 0L)
+        val isFreshRequest = requestedAt > 0L &&
+            (System.currentTimeMillis() - requestedAt) <= HOME_SETTINGS_RETURN_TIMEOUT_MS
+        Log.i(
+            TAG,
+            "consumeHomeSettingsReturnOnce: inProgress=true, requestedAt=$requestedAt, isFreshRequest=$isFreshRequest"
+        )
+
+        prefs.edit {
+            putBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
+            remove(HOME_SETTINGS_REQUESTED_AT_KEY)
+        }
+        return isFreshRequest
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -214,8 +233,6 @@ class MainActivity : AppCompatActivity() {
         if (isLockedNow()) return
         if (!isAppDefaultHome()) return
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val setupCompleted = prefs.getBoolean(HOME_SETUP_COMPLETED_KEY, false)
-        if (!setupCompleted) return
         if (prefs.getBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)) return
         if (isExplicitLauncherLaunch()) return
         if (intent.getBooleanExtra(FORWARDING_TO_NORMAL_HOME_EXTRA, false)) return
@@ -430,9 +447,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openHomeSettings() {
+        val now = System.currentTimeMillis()
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
             putBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, true)
+            putLong(HOME_SETTINGS_REQUESTED_AT_KEY, now)
         }
+        Log.i(TAG, "openHomeSettings: marked in progress at=$now")
         val homeSettingsIntent = Intent(android.provider.Settings.ACTION_HOME_SETTINGS)
         try {
             startActivity(homeSettingsIntent)
