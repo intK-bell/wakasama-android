@@ -11,10 +11,11 @@
 
 ## Core Flags (SharedPreferences: `launcher_lock`)
 - `is_locked`: `true` なら通常ホームへ転送しない
-- `skip_forward_to_normal_home_once`: 御支度保存直後に1回だけ自動転送を抑止
+- `skip_forward_to_normal_home_once`: 御支度保存直後に、起動元（HOME/LAUNCHER/OTHER）に関係なく1回だけ自動転送を抑止
 - `home_settings_in_progress`: アプリからホーム設定へ遷移中フラグ
 - `home_settings_requested_at`: ホーム設定遷移開始時刻
 - `home_settings_expect_default_home`: 既定ホーム切替を期待するか
+- `normal_home_*`: 通常ホームの保存先（自アプリ / Settings / ResolverActivity / FallbackHome は保存対象外）
 
 ## Main Flow
 1. LAUNCHER起動で `MainActivity` が開く
@@ -24,6 +25,7 @@
 
 ## Dialog Flow (ホームアプリ設定)
 - `設定する`:
+  - 遷移直前に `normal_home_*` が未設定なら、現在の既定ホーム（fallbackで候補検出）を自動セット
   - `home_settings_*` フラグをセット
   - システムのホーム設定画面を別タスクで開く
 - `無視する`:
@@ -32,7 +34,9 @@
 ## Settings Save Flow
 - バリデーション通過後に設定保存
 - メールは空欄許可（入力ありの場合のみ形式チェック）
+- 上級設定の通常ホーム選択は即保存しない（画面内一時保持）
 - 保存時に以下を実施:
+  - 一時保持中の通常ホーム選択を `normal_home_*` へ保存
   - `skip_forward_to_normal_home_once = true`
   - `home_settings_in_progress = false`
   - `home_settings_requested_at` / `home_settings_expect_default_home` を削除

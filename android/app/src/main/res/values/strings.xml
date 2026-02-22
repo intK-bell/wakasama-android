@@ -62,8 +62,8 @@
     <string name="hint_question_n">質問%1$d</string>
     <string name="answer_hint_format">回答%1$d</string>
     <string name="question_label_format">質問%1$d: %2$s</string>
-    <string name="default_question_1">今日やることは？</string>
-    <string name="default_question_2">昨日の反省は？</string>
+    <string name="default_question_1">今日の国語の宿題は？</string>
+    <string name="default_question_2">今日の算数の宿題は？</string>
     <string name="save_settings">御支度を保存</string>
     <string name="msg_settings_saved">設定を保存した</string>
     <string name="msg_settings_required">設定した質問数ぶんの質問文は必須</string>

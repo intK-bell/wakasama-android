@@ -32,6 +32,11 @@
 - 御支度保存時はメールアドレス空欄を許可する。
 - メールアドレスが入力されている場合のみ形式バリデーションを実施する。
 
+## 追加タスク: 通常ホーム保存タイミングの統一
+- `SettingsActivity` 起動時の `normal_home_*` 暗黙保存は行わない。
+- 自動セットは「ホーム設定ダイアログで `設定する` 押下直前」に限定する。
+- 上級設定の通常ホーム選択は即時 `SharedPreferences` 保存せず、`保存する` 押下時に反映する。
+
 ## 参照
 - `android/app/src/main/java/com/example/launcherlock/MainActivity.kt`
 - `android/app/src/main/java/com/example/launcherlock/SettingsActivity.kt`

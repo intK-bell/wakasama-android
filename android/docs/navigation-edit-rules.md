@@ -38,3 +38,13 @@
 - 遷移ロジック変更時は、同一コミットで以下を更新する:
   - `android/docs/navigation-state-map.md`
   - `android/docs/navigation-edit-rules.md`
+
+## Rule 8: `lookup` の固定手順
+- `lookup` は以下をまとめて実施する作業名とする。
+  1. `adb devices` で端末確認
+  2. 端末の既定ホームを「デフォルト」へ戻す
+  3. `adb uninstall com.aokikensaku.launcherlock`（未インストール時の失敗は無視して続行）
+  4. `adb logcat -c`
+  5. `adb install -r <latest-debug-apk>` で最新debug APKを新規導入
+  6. 必要に応じてログ監視を起動（例: `adb logcat -v time MainActivity:I SettingsActivity:I LockStateEvaluator:I ActivityTaskManager:I '*:S'`）
+- 目的は「本アプリが入っていない状態から初回インストール直後」を毎回再現し、遷移確認条件を固定すること。

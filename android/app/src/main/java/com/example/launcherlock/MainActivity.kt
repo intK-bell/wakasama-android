@@ -213,8 +213,7 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        val launchSource = detectLaunchSource(intent)
-        val shouldSuppressForward = consumeAutoForwardSuppressionIfNeeded(launchSource)
+        val shouldSuppressForward = consumeAutoForwardSuppressionIfNeeded()
         if (!shouldSuppressForward) {
             maybeForwardToNormalHome(intent)
         }
@@ -310,8 +309,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun consumeAutoForwardSuppressionIfNeeded(launchSource: LaunchSource): Boolean {
-        if (launchSource == LaunchSource.HOME) return false
+    private fun consumeAutoForwardSuppressionIfNeeded(): Boolean {
         if (!suppressNextAutoForwardToNormalHome) return false
         suppressNextAutoForwardToNormalHome = false
         return true
@@ -323,9 +321,7 @@ class MainActivity : AppCompatActivity() {
         val rawCls = prefs.getString(NORMAL_HOME_CLASS_KEY, null)?.trim().orEmpty()
         if (pkg.isBlank() || rawCls.isBlank()) return null
         val cls = if (rawCls.startsWith(".")) "$pkg$rawCls" else rawCls
-        if (pkg == packageName) return null
-        if (pkg == "com.android.settings") return null
-        if (cls.contains("FallbackHome")) return null
+        if (!isSelectableNormalHomeComponent(pkg, cls)) return null
         return ComponentName(pkg, cls)
     }
 
@@ -338,9 +334,7 @@ class MainActivity : AppCompatActivity() {
                 val info = resolveInfo.activityInfo ?: return@mapNotNull null
                 val pkg = info.packageName
                 val cls = if (info.name.startsWith(".")) "$pkg${info.name}" else info.name
-                if (pkg == packageName) return@mapNotNull null
-                if (pkg == "com.android.settings") return@mapNotNull null
-                if (cls.contains("FallbackHome")) return@mapNotNull null
+                if (!isSelectableNormalHomeComponent(pkg, cls)) return@mapNotNull null
                 ComponentName(pkg, cls)
             }
             .distinctBy { "${it.packageName}/${it.className}" }
@@ -474,6 +468,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openHomeSettings() {
+        ensureNormalHomeComponentSavedBeforeHomeSettings()
         val now = System.currentTimeMillis()
         val expectDefaultHome = !isAppDefaultHome()
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
@@ -494,6 +489,47 @@ class MainActivity : AppCompatActivity() {
                 }
             )
         }
+    }
+
+    private fun ensureNormalHomeComponentSavedBeforeHomeSettings() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (loadSavedNormalHomeComponent() != null) return
+
+        val candidate = resolveCurrentDefaultHomeComponent() ?: discoverNormalHomeComponent()
+        if (candidate == null) {
+            Log.w(TAG, "ensureNormalHomeComponentSavedBeforeHomeSettings: no candidate found")
+            return
+        }
+        prefs.edit {
+            putString(NORMAL_HOME_PACKAGE_KEY, candidate.packageName)
+            putString(NORMAL_HOME_CLASS_KEY, candidate.className)
+        }
+        Log.i(
+            TAG,
+            "ensureNormalHomeComponentSavedBeforeHomeSettings: saved=${candidate.flattenToShortString()}"
+        )
+    }
+
+    private fun resolveCurrentDefaultHomeComponent(): ComponentName? {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        val resolved = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            ?: return null
+        val info = resolved.activityInfo ?: return null
+        val pkg = info.packageName
+        val cls = if (info.name.startsWith(".")) "$pkg${info.name}" else info.name
+        if (!isSelectableNormalHomeComponent(pkg, cls)) return null
+        return ComponentName(pkg, cls)
+    }
+
+    private fun isSelectableNormalHomeComponent(pkg: String, cls: String): Boolean {
+        if (pkg == packageName) return false
+        if (pkg == "com.android.settings") return false
+        if (pkg == "android") return false
+        if (cls.contains("ResolverActivity")) return false
+        if (cls.contains("FallbackHome")) return false
+        return true
     }
 
     private fun showSuccessPopup(message: String) {

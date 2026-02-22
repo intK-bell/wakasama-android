@@ -119,17 +119,8 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val normalHomeCandidates = loadHomeCandidates()
-        if (prefs.getString(NORMAL_HOME_PACKAGE_KEY, null).isNullOrBlank()) {
-            findCurrentDefaultHomeCandidate()?.let { candidate ->
-                if (candidate.packageName != packageName) {
-                    prefs.edit {
-                        putString(NORMAL_HOME_PACKAGE_KEY, candidate.packageName)
-                        putString(NORMAL_HOME_CLASS_KEY, candidate.className)
-                    }
-                }
-            }
-        }
-        updateNormalHomeValue(normalHomeValue, prefs, normalHomeCandidates)
+        var selectedNormalHome = findSavedNormalHomeCandidate(prefs, normalHomeCandidates)
+        updateNormalHomeValue(normalHomeValue, selectedNormalHome)
         selectNormalHomeButton.setOnClickListener {
             if (normalHomeCandidates.isEmpty()) {
                 resultText.text = getString(R.string.msg_normal_home_not_found)
@@ -140,11 +131,8 @@ class SettingsActivity : AppCompatActivity() {
                 .setTitle(getString(R.string.select_normal_home))
                 .setItems(labels) { _, which ->
                     val selected = normalHomeCandidates[which]
-                    prefs.edit {
-                        putString(NORMAL_HOME_PACKAGE_KEY, selected.packageName)
-                        putString(NORMAL_HOME_CLASS_KEY, selected.className)
-                    }
-                    updateNormalHomeValue(normalHomeValue, prefs, normalHomeCandidates)
+                    selectedNormalHome = selected
+                    updateNormalHomeValue(normalHomeValue, selectedNormalHome)
                     resultText.text = getString(R.string.msg_normal_home_saved)
                 }
                 .show()
@@ -250,6 +238,10 @@ class SettingsActivity : AppCompatActivity() {
                 }
                 for (idx in (desiredCount + 1)..MAX_QUESTIONS) {
                     remove("question_$idx")
+                }
+                selectedNormalHome?.let { selected ->
+                    putString(NORMAL_HOME_PACKAGE_KEY, selected.packageName)
+                    putString(NORMAL_HOME_CLASS_KEY, selected.className)
                 }
             }
 
@@ -467,36 +459,19 @@ class SettingsActivity : AppCompatActivity() {
             .sortedBy { it.label.lowercase(Locale.ROOT) }
     }
 
-    private fun findCurrentDefaultHomeCandidate(): HomeCandidate? {
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-        }
-        val resolved = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-            ?: return null
-        val info = resolved.activityInfo ?: return null
-        val label = resolved.loadLabel(packageManager)?.toString()
-            ?: "${info.packageName}/${info.name}"
-        val normalizedClass = if (info.name.startsWith(".")) {
-            "${info.packageName}${info.name}"
-        } else {
-            info.name
-        }
-        if (!isSelectableNormalHome(info.packageName, normalizedClass)) return null
-        return HomeCandidate(
-            packageName = info.packageName,
-            className = normalizedClass,
-            label = label
-        )
+    private fun findSavedNormalHomeCandidate(
+        prefs: android.content.SharedPreferences,
+        candidates: List<HomeCandidate>
+    ): HomeCandidate? {
+        val pkg = prefs.getString(NORMAL_HOME_PACKAGE_KEY, null)
+        val cls = prefs.getString(NORMAL_HOME_CLASS_KEY, null)
+        return candidates.firstOrNull { it.packageName == pkg && it.className == cls }
     }
 
     private fun updateNormalHomeValue(
         textView: TextView,
-        prefs: android.content.SharedPreferences,
-        candidates: List<HomeCandidate>
+        selected: HomeCandidate?
     ) {
-        val pkg = prefs.getString(NORMAL_HOME_PACKAGE_KEY, null)
-        val cls = prefs.getString(NORMAL_HOME_CLASS_KEY, null)
-        val selected = candidates.firstOrNull { it.packageName == pkg && it.className == cls }
         textView.text = selected?.label ?: getString(R.string.normal_home_not_selected)
     }
 }
