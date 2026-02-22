@@ -31,6 +31,9 @@ class SettingsActivity : AppCompatActivity() {
         private const val MAX_QUESTIONS = 20
         private const val PREFS_NAME = "launcher_lock"
         private const val SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY = "skip_forward_to_normal_home_once"
+        private const val HOME_SETTINGS_IN_PROGRESS_KEY = "home_settings_in_progress"
+        private const val HOME_SETTINGS_REQUESTED_AT_KEY = "home_settings_requested_at"
+        private const val HOME_SETTINGS_EXPECT_DEFAULT_HOME_KEY = "home_settings_expect_default_home"
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
         private const val DEFAULT_WEEKDAY_CSV = "1,2,3,4,5"
@@ -209,11 +212,7 @@ class SettingsActivity : AppCompatActivity() {
             val desiredCount = questionCountOptions
                 .getOrElse(questionCountSpinner.selectedItemPosition) { savedCount }
 
-            if (mailTo.isBlank()) {
-                resultText.text = getString(R.string.msg_missing_mail_to)
-                return@setOnClickListener
-            }
-            if (!EmailValidator.isValid(mailTo)) {
+            if (mailTo.isNotBlank() && !EmailValidator.isValid(mailTo)) {
                 resultText.text = getString(R.string.msg_invalid_mail_to)
                 return@setOnClickListener
             }
@@ -258,8 +257,16 @@ class SettingsActivity : AppCompatActivity() {
             LockScheduler.schedule(applicationContext)
             prefs.edit {
                 putBoolean(SKIP_FORWARD_TO_NORMAL_HOME_ONCE_KEY, true)
+                putBoolean(HOME_SETTINGS_IN_PROGRESS_KEY, false)
+                remove(HOME_SETTINGS_REQUESTED_AT_KEY)
+                remove(HOME_SETTINGS_EXPECT_DEFAULT_HOME_KEY)
             }
             setResult(Activity.RESULT_OK, Intent())
+            startActivity(
+                Intent(this, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                }
+            )
             finish()
         }
 
