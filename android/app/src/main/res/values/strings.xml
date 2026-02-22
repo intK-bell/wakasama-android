@@ -41,11 +41,11 @@
     <string name="lock_mode_every_day">毎日</string>
     <string name="lock_time_label">予約時刻</string>
     <string name="edit_lock_time">変更</string>
-    <string name="advanced_settings_closed">上級設定（オプション） ▼</string>
-    <string name="advanced_settings_open">上級設定（オプション） ▲</string>
-    <string name="normal_home_label">結界解除時に開くホーム</string>
-    <string name="normal_home_not_selected">未選択（選択してください）</string>
-    <string name="select_normal_home">通常ホームを選ぶ</string>
+    <string name="advanced_settings_closed">上級オプション ▽</string>
+    <string name="advanced_settings_open">上級オプション △</string>
+    <string name="normal_home_label">結界が解けている時に開くランチャー</string>
+    <string name="normal_home_not_selected">選択（選択してください）</string>
+    <string name="select_normal_home">選択</string>
     <string name="msg_normal_home_saved">通常ホームを保存した</string>
     <string name="msg_normal_home_not_found">通常ホーム候補が見つからない</string>
     <string name="weekday_select_label">ロック曜日（曜日指定モード時）</string>

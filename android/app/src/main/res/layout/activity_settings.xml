@@ -235,6 +235,43 @@
             android:textColor="@color/lotus_ink"
             android:textStyle="bold" />
 
+        <LinearLayout
+            android:id="@+id/advancedSettingsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+            <LinearLayout
+                android:id="@+id/normalHomeRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/normalHomeValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/normal_home_not_selected"
+                    android:textColor="@color/lotus_ink"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/selectNormalHomeButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:minHeight="36dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:backgroundTint="@color/duck_egg_cyan_deep"
+                    android:text="@string/select_normal_home"
+                    android:textColor="@color/lotus_ink" />
+            </LinearLayout>
+        </LinearLayout>
+
         <TextView
             android:id="@+id/settingsResultText"
             android:layout_width="match_parent"
@@ -251,40 +288,6 @@
             android:backgroundTint="@color/duck_egg_cyan_deep"
             android:text="@string/save_settings"
             android:textColor="@color/lotus_ink" />
-
-        <LinearLayout
-            android:id="@+id/advancedSettingsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-            <TextView
-                android:id="@+id/normalHomeLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/normal_home_label"
-                android:textColor="@color/lotus_ink"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/normalHomeValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/normal_home_not_selected"
-                android:textColor="@color/lotus_ink"
-                android:textSize="16sp" />
-
-            <Button
-                android:id="@+id/selectNormalHomeButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:backgroundTint="@color/duck_egg_cyan_deep"
-                android:text="@string/select_normal_home"
-                android:textColor="@color/lotus_ink" />
-        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>
