@@ -60,6 +60,7 @@
     <string name="weekday_no_reservation_note">※全曜日のチェックを外すと予約無効になります</string>
     <string name="msg_missing_mail_to">送信先メールアドレスを設定して</string>
     <string name="msg_invalid_mail_to">メールアドレスの形式が正しくない</string>
+    <string name="msg_answer_required">若様、何かご入力くださいませ！</string>
     <string name="hint_question_n">質問%1$d</string>
     <string name="answer_hint_format">回答%1$d</string>
     <string name="question_label_format">質問%1$d: %2$s</string>
@@ -72,4 +73,6 @@
     <string name="msg_invalid_question_count">質問数は1〜20で入力して</string>
     <string name="msg_question_count_updated">質問入力欄を更新した</string>
     <string name="question_answer_area_description">質問と回答の入力欄</string>
+    <string name="fold_restriction_title">端末の向きを戻してね</string>
+    <string name="fold_restriction_message">Fold端末は折りたたみ状態でのみ利用できます。</string>
 </resources>

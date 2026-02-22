@@ -47,8 +47,8 @@ android {
         minSdk = 26
         //noinspection EditedTargetSdkVersion
         targetSdk = 36
-        versionCode = 17
-        versionName = "1.0.17"
+        versionCode = 18
+        versionName = "1.0.18"
         buildConfigField(
             "String",
             "DEFAULT_API_BASE_URL",
@@ -100,6 +100,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
     implementation("com.google.android.material:material:1.13.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+    implementation("androidx.window:window:1.3.0")
 
     implementation("androidx.work:work-runtime-ktx:2.11.1")
 

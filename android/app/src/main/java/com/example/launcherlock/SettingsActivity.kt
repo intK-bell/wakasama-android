@@ -18,6 +18,11 @@ import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.window.layout.FoldingFeature
+import androidx.window.layout.WindowInfoTracker
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.appcompat.app.AlertDialog
@@ -25,6 +30,7 @@ import com.example.launcherlock.model.LockDayMode
 import com.example.launcherlock.scheduler.LockScheduler
 import java.time.DayOfWeek
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 class SettingsActivity : AppCompatActivity() {
     companion object {
@@ -60,12 +66,14 @@ class SettingsActivity : AppCompatActivity() {
     private val weekdayChecks = linkedMapOf<Int, CheckBox>()
     private lateinit var statusText: TextView
     private lateinit var toggleLockButton: Button
+    private var foldBlockedDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        monitorFoldState()
 
         val mailToInput = findViewById<EditText>(R.id.mailToInput)
         val questionCountSpinner = findViewById<Spinner>(R.id.questionCountSpinner)
@@ -270,6 +278,46 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         updateLockStateLabel()
+    }
+
+    override fun onDestroy() {
+        foldBlockedDialog?.dismiss()
+        foldBlockedDialog = null
+        super.onDestroy()
+    }
+
+    private fun monitorFoldState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                WindowInfoTracker.getOrCreate(this@SettingsActivity)
+                    .windowLayoutInfo(this@SettingsActivity)
+                    .collect { layoutInfo ->
+                        val blocked = layoutInfo.displayFeatures
+                            .filterIsInstance<FoldingFeature>()
+                            .any { feature ->
+                                feature.state == FoldingFeature.State.FLAT ||
+                                    feature.state == FoldingFeature.State.HALF_OPENED ||
+                                    feature.isSeparating
+                            }
+                        applyFoldRestriction(blocked)
+                    }
+            }
+        }
+    }
+
+    private fun applyFoldRestriction(blocked: Boolean) {
+        if (!blocked) {
+            foldBlockedDialog?.dismiss()
+            foldBlockedDialog = null
+            return
+        }
+        if (foldBlockedDialog?.isShowing == true) return
+        foldBlockedDialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.fold_restriction_title))
+            .setMessage(getString(R.string.fold_restriction_message))
+            .setCancelable(false)
+            .setPositiveButton(android.R.string.ok) { _, _ -> finish() }
+            .show()
     }
 
     private fun updateLockStateLabel() {

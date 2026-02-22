@@ -20,7 +20,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.window.layout.FoldingFeature
+import androidx.window.layout.WindowInfoTracker
 import com.example.launcherlock.lock.LockAlertNotifier
 import com.example.launcherlock.lock.LockStateEvaluator
 import com.example.launcherlock.model.QuestionAnswer
@@ -66,6 +70,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var submitButtonLabel: TextView
     private var isSubmitting = false
     private var suppressNextAutoForwardToNormalHome = false
+    private var foldBlockedDialog: AlertDialog? = null
     private val questionRows = mutableListOf<QuestionRow>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,6 +99,7 @@ class MainActivity : AppCompatActivity() {
 
         setupOpenSettingsGuard()
         maybeRequestNotificationPermission()
+        monitorFoldState()
 
         submitButton.setOnClickListener {
             if (isSubmitting) return@setOnClickListener
@@ -101,6 +107,10 @@ class MainActivity : AppCompatActivity() {
             val answers = questionRows.map {
                 QuestionAnswer(q = it.question, a = it.answerInput.text.toString())
             }.filter { it.q.isNotBlank() || it.a.isNotBlank() }
+            if (answers.isEmpty() || answers.any { it.a.isBlank() }) {
+                showErrorPopup(getString(R.string.msg_answer_required))
+                return@setOnClickListener
+            }
 
             lifecycleScope.launch {
                 isSubmitting = true
@@ -165,6 +175,43 @@ class MainActivity : AppCompatActivity() {
         updateLockTaskMode()
     }
 
+    private fun monitorFoldState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                WindowInfoTracker.getOrCreate(this@MainActivity)
+                    .windowLayoutInfo(this@MainActivity)
+                    .collect { layoutInfo ->
+                        val blocked = layoutInfo.displayFeatures
+                            .filterIsInstance<FoldingFeature>()
+                            .any { feature ->
+                                feature.state == FoldingFeature.State.FLAT ||
+                                    feature.state == FoldingFeature.State.HALF_OPENED ||
+                                    feature.isSeparating
+                            }
+                        applyFoldRestriction(blocked)
+                    }
+            }
+        }
+    }
+
+    private fun applyFoldRestriction(blocked: Boolean) {
+        submitButton.isEnabled = !blocked && !isSubmitting
+        questionAnswerContainer.isEnabled = !blocked
+        findViewById<View>(R.id.openSettingsButton).isEnabled = !blocked
+        questionAnswerContainer.alpha = if (blocked) 0.35f else 1f
+        if (!blocked) {
+            foldBlockedDialog?.dismiss()
+            foldBlockedDialog = null
+            return
+        }
+        if (foldBlockedDialog?.isShowing == true) return
+        foldBlockedDialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.fold_restriction_title))
+            .setMessage(getString(R.string.fold_restriction_message))
+            .setCancelable(false)
+            .show()
+    }
+
     override fun onResume() {
         super.onResume()
 
@@ -208,6 +255,12 @@ class MainActivity : AppCompatActivity() {
             maybeForwardToNormalHome(intent)
         }
         updateLockTaskMode()
+    }
+
+    override fun onDestroy() {
+        foldBlockedDialog?.dismiss()
+        foldBlockedDialog = null
+        super.onDestroy()
     }
 
     private fun consumeSkipForwardToNormalHomeOnce(
