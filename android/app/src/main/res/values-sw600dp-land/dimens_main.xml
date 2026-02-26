@@ -1,0 +1,8 @@
+<resources>
+    <dimen name="main_title_text_size">16sp</dimen>
+    <dimen name="main_settings_text_size">19sp</dimen>
+    <dimen name="main_submit_text_size">19sp</dimen>
+    <dimen name="main_question_text_size">18sp</dimen>
+    <dimen name="main_answer_text_size">18sp</dimen>
+    <dimen name="main_question_vertical_gap">10dp</dimen>
+</resources>

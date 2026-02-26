@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -524,6 +525,9 @@ class MainActivity : AppCompatActivity() {
     private fun applyConfiguredQuestions() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val count = prefs.getInt("question_count", 2).coerceIn(1, 20)
+        val questionTextSize = resources.getDimension(R.dimen.main_question_text_size)
+        val answerTextSize = resources.getDimension(R.dimen.main_answer_text_size)
+        val questionVerticalGap = resources.getDimensionPixelSize(R.dimen.main_question_vertical_gap)
         val questions = (1..count).map { index ->
             prefs.getString("question_$index", "")?.trim().orEmpty()
         }.filter { it.isNotBlank() }
@@ -534,13 +538,16 @@ class MainActivity : AppCompatActivity() {
         questions.forEachIndexed { idx, question ->
             val questionText = TextView(this).apply {
                 text = getString(R.string.question_label_format, idx + 1, question)
-                textSize = 16f
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, questionTextSize)
+                gravity = android.view.Gravity.START
+                textAlignment = View.TEXT_ALIGNMENT_VIEW_START
                 setTypeface(typeface, android.graphics.Typeface.BOLD)
                 setTextColor(ContextCompat.getColor(this@MainActivity, R.color.lotus_ink))
             }
             val answerInput = EditText(this).apply {
                 hint = getString(R.string.answer_hint_format, idx + 1)
                 inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, answerTextSize)
                 setTextColor(ContextCompat.getColor(this@MainActivity, R.color.lotus_ink))
                 setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.duck_egg_cyan_deep))
                 background = null
@@ -551,7 +558,7 @@ class MainActivity : AppCompatActivity() {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
-            if (idx > 0) qParams.topMargin = (8 * resources.displayMetrics.density).toInt()
+            if (idx > 0) qParams.topMargin = questionVerticalGap
             questionText.layoutParams = qParams
 
             val aParams = LinearLayout.LayoutParams(

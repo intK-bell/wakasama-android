@@ -27,19 +27,20 @@
         android:contentDescription="@null"
         android:scaleType="fitCenter"
         android:src="@drawable/ui_header_bar"
+        app:layout_constraintWidth_max="@dimen/main_header_max_width"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/retainerAvatar"
-        android:layout_width="85dp"
-        android:layout_height="85dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
+        android:layout_width="@dimen/main_retainer_size"
+        android:layout_height="@dimen/main_retainer_size"
+        android:layout_marginStart="@dimen/main_retainer_margin_start"
+        android:layout_marginTop="@dimen/main_retainer_margin_top"
         android:contentDescription="@null"
         android:src="@drawable/avatar_retainer"
-        android:translationX="-28dp"
+        android:translationX="@dimen/main_retainer_translation_x"
         app:layout_constraintStart_toStartOf="@id/headerBar"
         app:layout_constraintTop_toTopOf="@id/headerBar" />
 
@@ -48,24 +49,24 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
-        android:layout_marginEnd="24dp"
-        android:translationX="-8dp"
+        android:layout_marginEnd="@dimen/main_title_margin_end"
+        android:translationX="@dimen/main_title_translation_x"
         android:text="@string/main_title"
         android:textColor="@color/lotus_ink"
-        android:textSize="18sp"
+        android:textSize="@dimen/main_title_text_size"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/retainerAvatar"
+        app:layout_constraintBottom_toBottomOf="@id/headerBar"
         app:layout_constraintEnd_toEndOf="@id/headerBar"
         app:layout_constraintStart_toEndOf="@id/retainerAvatar"
-        app:layout_constraintTop_toTopOf="@id/retainerAvatar" />
+        app:layout_constraintTop_toTopOf="@id/headerBar" />
 
     <!-- 3. 設定ボタン -->
     <FrameLayout
         android:id="@+id/openSettingsButton"
-        android:layout_width="132dp"
+        android:layout_width="@dimen/main_settings_button_width"
         android:layout_height="wrap_content"
-        android:layout_marginStart="25dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="@dimen/main_settings_button_margin_start"
+        android:layout_marginTop="@dimen/main_settings_button_margin_top"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
@@ -74,7 +75,7 @@
         app:layout_constraintTop_toBottomOf="@id/headerBar">
 
         <ImageView
-            android:layout_width="122dp"
+            android:layout_width="@dimen/main_settings_bar_width"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:contentDescription="@null"
@@ -87,7 +88,7 @@
             android:layout_gravity="center"
             android:text="@string/open_settings"
             android:textColor="@color/lotus_ink"
-            android:textSize="18sp"
+            android:textSize="@dimen/main_settings_text_size"
             android:textStyle="bold" />
 
     </FrameLayout>
@@ -97,13 +98,14 @@
         android:id="@+id/panelFrame"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="-40dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="@dimen/main_panel_margin_horizontal"
+        android:layout_marginTop="@dimen/main_panel_margin_top"
+        android:layout_marginEnd="@dimen/main_panel_margin_horizontal"
+        android:layout_marginBottom="@dimen/main_panel_margin_bottom"
         android:contentDescription="@null"
         android:scaleType="fitXY"
         android:src="@drawable/ui_panel_frame"
+        app:layout_constraintWidth_max="@dimen/main_panel_max_width"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -114,16 +116,16 @@
     <!-- 5.1. contentArea (スクロール対応) -->
     <ImageView
         android:id="@+id/wakasama"
-        android:layout_width="128dp"
+        android:layout_width="@dimen/main_wakasama_width"
         android:layout_height="wrap_content"
-        android:layout_marginTop="72dp"
-        android:layout_marginEnd="4dp"
+        android:layout_marginTop="@dimen/main_wakasama_margin_top"
+        android:layout_marginEnd="@dimen/main_wakasama_margin_end"
         android:adjustViewBounds="true"
         android:contentDescription="@null"
         android:scaleType="fitCenter"
         android:src="@drawable/char_wakasama"
-        android:translationX="-18dp"
-        android:translationY="-18dp"
+        android:translationX="@dimen/main_wakasama_translation_x"
+        android:translationY="@dimen/main_wakasama_translation_y"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerBar" />
 
@@ -131,10 +133,10 @@
         android:id="@+id/contentArea"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="48dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginStart="@dimen/main_content_margin_horizontal"
+        android:layout_marginTop="@dimen/main_content_margin_top"
+        android:layout_marginEnd="@dimen/main_content_margin_horizontal"
+        android:layout_marginBottom="@dimen/main_content_margin_bottom"
         android:contentDescription="@string/question_answer_area_description"
         app:layout_constraintBottom_toTopOf="@+id/submitButton"
         app:layout_constraintEnd_toEndOf="@id/panelFrame"
@@ -153,9 +155,9 @@
         android:id="@+id/submitButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginEnd="48dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginStart="@dimen/main_submit_margin_horizontal"
+        android:layout_marginEnd="@dimen/main_submit_margin_horizontal"
+        android:layout_marginBottom="@dimen/main_submit_margin_bottom"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
@@ -178,7 +180,7 @@
             android:layout_gravity="center"
             android:text="@string/submit_and_unlock"
             android:textColor="@color/lotus_ink"
-            android:textSize="20sp"
+            android:textSize="@dimen/main_submit_text_size"
             android:textStyle="bold" />
 
     </FrameLayout>

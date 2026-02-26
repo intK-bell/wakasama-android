@@ -1,0 +1,50 @@
+<resources>
+    <dimen name="main_header_max_width">10000dp</dimen>
+    <dimen name="main_panel_max_width">10000dp</dimen>
+
+    <dimen name="main_retainer_size">85dp</dimen>
+    <dimen name="main_retainer_margin_start">24dp</dimen>
+    <dimen name="main_retainer_margin_top">16dp</dimen>
+    <dimen name="main_retainer_translation_x">-28dp</dimen>
+
+    <dimen name="main_title_margin_end">24dp</dimen>
+    <dimen name="main_title_translation_x">-8dp</dimen>
+    <dimen name="main_title_text_size">18sp</dimen>
+
+    <dimen name="main_settings_button_width">132dp</dimen>
+    <dimen name="main_settings_button_margin_start">25dp</dimen>
+    <dimen name="main_settings_button_margin_top">8dp</dimen>
+    <dimen name="main_settings_bar_width">122dp</dimen>
+    <dimen name="main_settings_text_size">18sp</dimen>
+
+    <dimen name="main_panel_margin_horizontal">16dp</dimen>
+    <dimen name="main_panel_margin_top">-40dp</dimen>
+    <dimen name="main_panel_margin_bottom">16dp</dimen>
+
+    <dimen name="main_wakasama_width">128dp</dimen>
+    <dimen name="main_wakasama_margin_top">72dp</dimen>
+    <dimen name="main_wakasama_margin_end">4dp</dimen>
+    <dimen name="main_wakasama_translation_x">-18dp</dimen>
+    <dimen name="main_wakasama_translation_y">-18dp</dimen>
+
+    <dimen name="main_content_margin_horizontal">48dp</dimen>
+    <dimen name="main_content_margin_top">32dp</dimen>
+    <dimen name="main_content_margin_bottom">32dp</dimen>
+
+    <dimen name="main_submit_margin_horizontal">48dp</dimen>
+    <dimen name="main_submit_margin_bottom">32dp</dimen>
+    <dimen name="main_submit_text_size">20sp</dimen>
+
+    <dimen name="main_question_text_size">16sp</dimen>
+    <dimen name="main_answer_text_size">16sp</dimen>
+    <dimen name="main_question_vertical_gap">8dp</dimen>
+
+    <!-- Landscape-only tuning defaults (overridden in values-land). -->
+    <dimen name="main_land_left_top_margin">14dp</dimen>
+    <dimen name="main_land_header_title_size">18sp</dimen>
+    <dimen name="main_land_settings_text_size">20sp</dimen>
+    <dimen name="main_land_content_margin_start">52dp</dimen>
+    <dimen name="main_land_content_margin_end">52dp</dimen>
+    <dimen name="main_land_submit_margin_start">46dp</dimen>
+    <dimen name="main_land_submit_margin_end">46dp</dimen>
+</resources>

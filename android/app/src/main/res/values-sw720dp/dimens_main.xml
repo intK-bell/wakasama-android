@@ -1,0 +1,41 @@
+<resources>
+    <dimen name="main_header_max_width">680dp</dimen>
+    <dimen name="main_panel_max_width">640dp</dimen>
+
+    <dimen name="main_retainer_size">112dp</dimen>
+    <dimen name="main_retainer_margin_start">34dp</dimen>
+    <dimen name="main_retainer_margin_top">22dp</dimen>
+    <dimen name="main_retainer_translation_x">-22dp</dimen>
+
+    <dimen name="main_title_margin_end">34dp</dimen>
+    <dimen name="main_title_translation_x">-2dp</dimen>
+    <dimen name="main_title_text_size">28sp</dimen>
+
+    <dimen name="main_settings_button_width">196dp</dimen>
+    <dimen name="main_settings_button_margin_start">34dp</dimen>
+    <dimen name="main_settings_button_margin_top">14dp</dimen>
+    <dimen name="main_settings_bar_width">184dp</dimen>
+    <dimen name="main_settings_text_size">26sp</dimen>
+
+    <dimen name="main_panel_margin_horizontal">28dp</dimen>
+    <dimen name="main_panel_margin_top">-30dp</dimen>
+    <dimen name="main_panel_margin_bottom">28dp</dimen>
+
+    <dimen name="main_wakasama_width">194dp</dimen>
+    <dimen name="main_wakasama_margin_top">98dp</dimen>
+    <dimen name="main_wakasama_margin_end">16dp</dimen>
+    <dimen name="main_wakasama_translation_x">-6dp</dimen>
+    <dimen name="main_wakasama_translation_y">-6dp</dimen>
+
+    <dimen name="main_content_margin_horizontal">72dp</dimen>
+    <dimen name="main_content_margin_top">48dp</dimen>
+    <dimen name="main_content_margin_bottom">42dp</dimen>
+
+    <dimen name="main_submit_margin_horizontal">80dp</dimen>
+    <dimen name="main_submit_margin_bottom">42dp</dimen>
+    <dimen name="main_submit_text_size">36sp</dimen>
+
+    <dimen name="main_question_text_size">30sp</dimen>
+    <dimen name="main_answer_text_size">28sp</dimen>
+    <dimen name="main_question_vertical_gap">16dp</dimen>
+</resources>
