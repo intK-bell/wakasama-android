@@ -2,8 +2,8 @@
     <dimen name="main_land_left_top_margin">24dp</dimen>
     <dimen name="main_land_header_title_size">15sp</dimen>
     <dimen name="main_land_settings_text_size">18sp</dimen>
-    <dimen name="main_land_content_margin_start">60dp</dimen>
-    <dimen name="main_land_content_margin_end">44dp</dimen>
-    <dimen name="main_land_submit_margin_start">54dp</dimen>
-    <dimen name="main_land_submit_margin_end">38dp</dimen>
+    <dimen name="main_land_content_margin_start">52dp</dimen>
+    <dimen name="main_land_content_margin_end">52dp</dimen>
+    <dimen name="main_land_submit_margin_start">46dp</dimen>
+    <dimen name="main_land_submit_margin_end">46dp</dimen>
 </resources>
