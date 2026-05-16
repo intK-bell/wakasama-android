@@ -43,7 +43,7 @@ class SettingsActivity : AppCompatActivity() {
         private const val HOME_SETTINGS_EXPECT_DEFAULT_HOME_KEY = "home_settings_expect_default_home"
         private const val NORMAL_HOME_PACKAGE_KEY = "normal_home_package"
         private const val NORMAL_HOME_CLASS_KEY = "normal_home_class"
-        private const val DEFAULT_WEEKDAY_CSV = "1,2,3,4,5"
+        private const val DEFAULT_WEEKDAY_CSV = ""
         private const val DEFAULT_LOCK_HOUR = 14
         private const val DEFAULT_LOCK_MINUTE = 0
         private const val ADVANCED_SETTINGS_OPEN_KEY = "advanced_settings_open"
@@ -374,21 +374,10 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun parseWeekdaysCsv(raw: String): Set<Int> {
         if (raw.isBlank()) return emptySet()
-        val parsed = raw.split(",")
+        return raw.split(",")
             .mapNotNull { it.trim().toIntOrNull() }
             .filter { it in 1..7 }
             .toSet()
-        return if (parsed.isEmpty()) {
-            setOf(
-                DayOfWeek.MONDAY.value,
-                DayOfWeek.TUESDAY.value,
-                DayOfWeek.WEDNESDAY.value,
-                DayOfWeek.THURSDAY.value,
-                DayOfWeek.FRIDAY.value
-            )
-        } else {
-            parsed
-        }
     }
 
     private fun formatLockTime(hour: Int, minute: Int): String {

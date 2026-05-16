@@ -52,8 +52,8 @@ android {
         minSdk = 26
         //noinspection EditedTargetSdkVersion
         targetSdk = 36
-        versionCode = 19
-        versionName = "1.0.19"
+        versionCode = 23
+        versionName = "1.0.21"
         buildConfigField(
             "String",
             "DEFAULT_API_BASE_URL",

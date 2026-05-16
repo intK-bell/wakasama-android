@@ -11,7 +11,7 @@ import java.time.LocalTime
 object LockStateEvaluator {
     const val PREFS_NAME = "launcher_lock"
     const val IS_LOCKED_KEY = "is_locked"
-    private const val DEFAULT_WEEKDAY_CSV = "1,2,3,4,5"
+    private const val DEFAULT_WEEKDAY_CSV = ""
 
     fun applyTimedLockIfNeeded(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -52,20 +52,9 @@ object LockStateEvaluator {
 
     private fun parseWeekdays(raw: String): Set<Int> {
         if (raw.isBlank()) return emptySet()
-        val parsed = raw.split(",")
+        return raw.split(",")
             .mapNotNull { it.trim().toIntOrNull() }
             .filter { it in 1..7 }
             .toSet()
-        return if (parsed.isEmpty()) {
-            setOf(
-                DayOfWeek.MONDAY.value,
-                DayOfWeek.TUESDAY.value,
-                DayOfWeek.WEDNESDAY.value,
-                DayOfWeek.THURSDAY.value,
-                DayOfWeek.FRIDAY.value
-            )
-        } else {
-            parsed
-        }
     }
 }
