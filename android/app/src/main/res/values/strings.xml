@@ -24,6 +24,9 @@
     <string name="home_setup_open_settings">設定する</string>
     <string name="home_setup_ignore">無視する</string>
     <string name="open_settings">御支度</string>
+    <string name="how_to_use">手引き</string>
+    <string name="how_to_use_title">若様の宿題 の手引き</string>
+    <string name="how_to_use_content"><![CDATA[<b>【一、結界（ロック）について】</b><br><br>決められた時刻になると、この「若様の宿題」が画面に現れます。<br>これにより他の一切の遊びを封じます。<br>これを「結界」にござります。<br><br><br><b>【二、結界を解く法】</b><br><br>画面に現れる問い（宿題の内容など）に答えを書き入れてください。<br>「かくかくしかじかじゃ」とボタンを押して申し伝えます。<br><br>答えが家臣（保護者様）の元へ届けば、結界は解かれ、いつもの画面に戻ることができましょう。<br><br><br><b>【三、御支度（設定）】</b><br><br>「御支度」より、問いの内容や数、結界を張る時刻、家臣の連絡先などを変えることができます。<br><br>「いつもの画面」の変更などは、さらに奥の「上級設定」にて行えまする。<br><br><br><b>【四、家臣（保護者様）の方へ】</b><br><br>若様が健やかに学びに励めるよう、何卒お見守りくださいませ。]]></string>
     <string name="settings_title">御支度</string>
     <string name="section_question">若様に答えて欲しい質問の設定</string>
     <string name="question_content_label">内容</string>

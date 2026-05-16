@@ -93,6 +93,38 @@
 
     </FrameLayout>
 
+    <!-- 3.1 使い方ボタン -->
+    <FrameLayout
+        android:id="@+id/howToUseButton"
+        android:layout_width="@dimen/main_settings_button_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="@id/openSettingsButton"
+        app:layout_constraintStart_toStartOf="@id/openSettingsButton"
+        app:layout_constraintTop_toBottomOf="@id/openSettingsButton">
+
+        <ImageView
+            android:layout_width="@dimen/main_settings_bar_width"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:contentDescription="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ui_setting_bar" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/how_to_use"
+            android:textColor="@color/lotus_ink"
+            android:textSize="@dimen/main_settings_text_size"
+            android:textStyle="bold" />
+
+    </FrameLayout>
+
     <!-- 5. 下パネル -->
     <ImageView
         android:id="@+id/panelFrame"

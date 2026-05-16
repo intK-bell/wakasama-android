@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.graphics.Color
 import android.os.Bundle
+import android.text.Html
 import android.text.InputType
 import android.util.Log
 import android.util.TypedValue
@@ -99,6 +100,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupOpenSettingsGuard()
+        setupHowToUseButton()
         maybeRequestNotificationPermission()
         monitorFoldState()
 
@@ -205,6 +207,7 @@ class MainActivity : AppCompatActivity() {
         submitButton.isEnabled = !blocked && !isSubmitting
         questionAnswerContainer.isEnabled = !blocked
         findViewById<View>(R.id.openSettingsButton).isEnabled = !blocked
+        findViewById<View>(R.id.howToUseButton).isEnabled = !blocked
         questionAnswerContainer.alpha = if (blocked) 0.35f else 1f
         if (!blocked) {
             foldBlockedDialog?.dismiss()
@@ -577,6 +580,18 @@ class MainActivity : AppCompatActivity() {
         val button = findViewById<View>(R.id.openSettingsButton)
         button.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
+        }
+    }
+
+    private fun setupHowToUseButton() {
+        val button = findViewById<View>(R.id.howToUseButton)
+        button.setOnClickListener {
+            val message = Html.fromHtml(getString(R.string.how_to_use_content), Html.FROM_HTML_MODE_COMPACT)
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.how_to_use_title))
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
         }
     }
 
